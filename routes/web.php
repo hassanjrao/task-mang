@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -20,10 +21,15 @@ Auth::routes();
 
 
 Route::middleware(["auth"])->group(function () {
+
     Route::match(['get', 'post'], '/dashboard', function () {
         return view('dashboard');
     })->name('dashboard.index');
 
-
     Route::resource('profile', ProfileController::class)->only(['index', 'update']);
+
+    Route::resource('tasks', TaskController::class);
+    Route::put('tasks/{task}/update-priority', [TaskController::class, 'updatePriority'])->name('tasks.update-priority');
+    Route::put('tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+
 });

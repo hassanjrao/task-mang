@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
 
-    <title>@yield('page-name') - Admin Panel - {{ config('app.name') }}</title>
+    <title>@yield('page-name') - {{ config('app.name') }}</title>
 
     <meta name="author" content="pixelcave">
     <meta name="robots" content="noindex, nofollow">
@@ -14,9 +14,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Icons -->
-
-
-
 
     <!-- Fonts and Styles -->
     @yield('css_before')
@@ -97,7 +94,7 @@
                     <span class="smini-visible">
                         <i class="fa fa-circle-notch text-primary"></i>
                     </span>
-                    <span class="smini-hide fs-5 tracking-wider">Admin Panel</span></span>
+                    <span class="smini-hide fs-5 tracking-wider">{{ config('app.name') }}</span></span>
                 </a>
                 <!-- END Logo -->
 
@@ -132,6 +129,13 @@
                                 href="{{ route('dashboard.index') }}">
                                 <i class="nav-main-link-icon si si-cursor"></i>
                                 <span class="nav-main-link-name">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link{{ request()->is('tasks') ? ' active' : '' }}"
+                                href="{{ route('tasks.index') }}">
+                                <i class="nav-main-link-icon si si-cursor"></i>
+                                <span class="nav-main-link-name">Tasks</span>
                             </a>
                         </li>
 
