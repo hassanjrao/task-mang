@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TaskAttachmentsController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -32,4 +33,7 @@ Route::middleware(["auth"])->group(function () {
     Route::put('tasks/{task}/update-priority', [TaskController::class, 'updatePriority'])->name('tasks.update-priority');
     Route::put('tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
 
+    Route::post('/attachments/upload', [TaskAttachmentsController::class, 'upload'])->name('attachments.upload');
+    Route::post('/attachments/revert', [TaskAttachmentsController::class, 'revert'])->name('attachments.revert');
+    Route::post('/attachments/remove', [TaskAttachmentsController::class, 'remove'])->name('attachments.remove');
 });

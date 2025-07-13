@@ -16,11 +16,12 @@ class CreateTaskAttachmentsTable extends Migration
         Schema::create('task_attachments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('task_id')->constrained('tasks')->onDelete('cascade');
+            $table->string('original_name')->nullable();
             $table->string('file_path');
             $table->softDeletes();
             $table->foreignId('created_by')
-            ->nullable()
-            ->constrained('users')->onDelete('cascade');
+                ->nullable()
+                ->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

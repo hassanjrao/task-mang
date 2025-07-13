@@ -66,7 +66,12 @@ class TaskController extends Controller
             'status' => 'required|integer',
             'sub_tasks' => 'array',
             'sub_tasks.*' => 'nullable|string',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,docx,xlsx|max:5120', // 5MB max
+            'group_id' => 'nullable|exists:groups,id',
+            'assigned_to' => 'nullable|exists:users,id'
         ]);
+
 
         $task = Task::create([
             'title' => $validated['title'],
@@ -92,6 +97,8 @@ class TaskController extends Controller
                 'is_completed' => $isCompleted,
             ]);
         }
+
+        $this->uploadAttachments($task, $request->input('uploaded_attachments'));
 
         return redirect()->route('tasks.index')->withToastSuccess('Task created successfully.');
     }
@@ -152,6 +159,9 @@ class TaskController extends Controller
             'sub_tasks' => 'array',
             'sub_tasks.*' => 'nullable|string',
             'sub_task_ids' => 'array',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,docx,xlsx|max:5120', // 5MB max
+            'group_id' => 'nullable|exists:groups,id',
         ]);
 
         $task->update([
@@ -205,6 +215,14 @@ class TaskController extends Controller
         // Delete removed subtasks
         $task->subTasks()->whereNotIn('id', $keepSubtaskIds)->delete();
 
+
+        // Handle attachments
+        if ($request->has('uploaded_attachments')) {
+            $this->uploadAttachments($task, $request->input('uploaded_attachments'));
+        }
+
+
+
         return redirect()->route('tasks.index')->withToastSuccess('Task updated successfully.');
     }
 
@@ -247,5 +265,20 @@ class TaskController extends Controller
         $task->update(['task_status_id' => $request->status]);
 
         return redirect()->back()->withToastSuccess('Task status updated successfully.');
+    }
+
+
+    public function uploadAttachments(Task $task, $attachments)
+    {
+        foreach ($attachments as $filePath) {
+            if (is_numeric($filePath)) {
+                // This is an existing attachment ID, skip it
+                continue;
+            }
+            $task->attachments()->create([
+                'file_path' => $filePath
+            ]);
+        }
+
     }
 }

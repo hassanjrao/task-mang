@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
-class TaskAttachments extends Model
+class TaskAttachment extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $guarded = [];
 
-    protected $appends= ['file_url'];
+    protected $appends = ['file_url'];
 
     public function getFileUrlAttribute()
     {
@@ -24,5 +24,4 @@ class TaskAttachments extends Model
     {
         return $this->belongsTo(Task::class, 'task_id')->withDefault();
     }
-
 }

@@ -4,7 +4,13 @@
     $addEdit = isset($task) ? 'Edit' : 'Add';
     $addUpdate = isset($task) ? 'Update' : 'Add';
 @endphp
-@section('page-name', $addEdit . ' Task '. ($task ? '#' . $task->title : ''))
+
+@section('page-name', $addEdit . ' Task ' . ($task ? '#' . $task->title : ''))
+
+@section('css_after')
+    <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
+@endsection
+
 @section('content')
 
     <!-- Page Content -->
@@ -121,8 +127,9 @@
                                     @enderror
                                 </div>
 
-
-                                <div class="col-lg-12 col-md-12 col-sm-12 mb-4">
+                                <div class="col-lg-8 mb-4">
+                                </div>
+                                <div class="col-lg-6 col-md-6 col-sm-6 mb-4">
                                     <?php
                                     $value = old('description', $task ? $task->description : null);
 
@@ -138,6 +145,20 @@
                                         </span>
                                     @enderror
                                 </div>
+                                <div class="col-lg-6 mb-4">
+                                    <label class="form-label">Attachments</label>
+                                    <input type="file" name="file" id="fileUpload" multiple />
+                                    <div id="uploaded-files">
+                                        @if ($task && $task->attachments)
+                                            @foreach ($task->attachments as $attachment)
+                                                <input type="hidden" name="uploaded_attachments[]"
+                                                    value="{{ $attachment->id }}">
+                                            @endforeach
+                                        @endif
+
+                                    </div>
+                                </div>
+
 
                                 <div class="col-lg-12 col-md-12 col-sm-12 mb-4">
                                     <label class="form-label">Sub Tasks</label>
@@ -183,14 +204,16 @@
                                                 <div class="col-md-2">
                                                     <div class="form-check">
                                                         <input type="checkbox" class="form-check-input" name="completed[]"
-                                                            id="completed_{{ $index }}" value="{{ $inputId }}"
+                                                            id="completed_{{ $index }}"
+                                                            value="{{ $inputId }}"
                                                             {{ $isCompleted ? 'checked' : '' }}>
                                                         <label class="form-check-label"
                                                             for="completed_{{ $index }}">Completed</label>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-2">
-                                                    <button type="button" class="btn btn-danger remove-sub-task">×</button>
+                                                    <button type="button"
+                                                        class="btn btn-danger remove-sub-task">×</button>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -230,15 +253,111 @@
 @endsection
 
 @section('js_after')
-<script>
-    let subTaskIndex = {{ count($subTasks) }};
 
-    document.getElementById('addSubTaskBtn').addEventListener('click', function () {
-        const wrapper = document.getElementById('subTasksWrapper');
-        const row = document.createElement('div');
-        row.classList.add('row', 'mb-2', 'sub-task-input', 'align-items-center');
+    <!-- JS -->
+    <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
 
-        row.innerHTML = `
+    <script>
+        FilePond.registerPlugin();
+        const pond = FilePond.create(document.querySelector('#fileUpload'), {
+            files: [
+               @foreach (isset($task) && $task->attachments ? $task->attachments : [] as $attachment)
+                    {
+                        source: '{{ $attachment->id }}',
+                        options: {
+                            type: 'local',
+                            file: {
+                                name: '{{ $attachment->original_name ?? "test" }}',
+                                size: 123456, // Optional: fake size, not validated
+                            },
+                            metadata: {
+                                serverId: '{{ $attachment->file_url }}'
+                            }
+                        }
+                    },
+                @endforeach
+            ],
+            allowMultiple: true,
+            server: {
+                process: {
+                    url: '{{ route('attachments.upload') }}',
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    onload: (response) => {
+                        // response = path like "uploads/tasks/abc.pdf"
+                        let hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'uploaded_attachments[]';
+                        hidden.value = response;
+                        document.getElementById('uploaded-files').appendChild(hidden);
+                        return response;
+                    },
+                    onerror: (err) => {
+                        console.error('Upload error', err);
+                    }
+                },
+
+                revert: (serverId, load) => {
+                    fetch(`{{ route('attachments.revert') }}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            path: serverId
+                        }),
+                    }).then(() => {
+                        // Remove the hidden input for this file if it exists
+                        const inputs = document.querySelectorAll(
+                            'input[name="uploaded_attachments[]"]');
+                        inputs.forEach(input => {
+                            if (input.value === serverId) {
+                                input.remove();
+                            }
+                        });
+
+                        load();
+                    });
+                },
+                remove: (source, load) => {
+                    fetch(`{{ route('attachments.remove') }}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            id: source
+                        }),
+                    }).then(() => {
+                        // Remove the hidden input for this file if it exists
+                        const inputs = document.querySelectorAll(
+                            'input[name="uploaded_attachments[]"]');
+                        inputs.forEach(input => {
+                            if (input.value === source) {
+                                input.remove();
+                            }
+                        });
+
+                        load();
+                    });
+                },
+            },
+        });
+    </script>
+
+    <script>
+        let subTaskIndex = {{ count($subTasks) }};
+
+        document.getElementById('addSubTaskBtn').addEventListener('click', function() {
+            const wrapper = document.getElementById('subTasksWrapper');
+            const row = document.createElement('div');
+            row.classList.add('row', 'mb-2', 'sub-task-input', 'align-items-center');
+
+            row.innerHTML = `
             <input type="hidden" name="sub_task_ids[${subTaskIndex}]" value="">
             <div class="col-md-8">
                 <input type="text" name="sub_tasks[${subTaskIndex}]" class="form-control" placeholder="Enter sub task">
@@ -255,15 +374,14 @@
                 <button type="button" class="btn btn-danger remove-sub-task">×</button>
             </div>
         `;
-        wrapper.appendChild(row);
-        subTaskIndex++;
-    });
+            wrapper.appendChild(row);
+            subTaskIndex++;
+        });
 
-    document.addEventListener('click', function (e) {
-        if (e.target.classList.contains('remove-sub-task')) {
-            e.target.closest('.sub-task-input').remove();
-        }
-    });
-</script>
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-sub-task')) {
+                e.target.closest('.sub-task-input').remove();
+            }
+        });
+    </script>
 @endsection
-
