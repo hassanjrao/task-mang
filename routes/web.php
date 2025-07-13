@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskAttachmentsController;
 use App\Http\Controllers\TaskController;
@@ -36,4 +37,10 @@ Route::middleware(["auth"])->group(function () {
     Route::post('/attachments/upload', [TaskAttachmentsController::class, 'upload'])->name('attachments.upload');
     Route::post('/attachments/revert', [TaskAttachmentsController::class, 'revert'])->name('attachments.revert');
     Route::post('/attachments/remove', [TaskAttachmentsController::class, 'remove'])->name('attachments.remove');
+
+    Route::resource('groups', GroupController::class);
+    Route::post('groups/{group}/join', [GroupController::class, 'join'])->name('groups.join');
+    Route::post('groups/{group}/leave', [GroupController::class, 'leave'])->name('groups.leave');
+    // your groups
+    Route::get('your-groups', [GroupController::class, 'yourGroups'])->name('groups.your-groups');
 });

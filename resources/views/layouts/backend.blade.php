@@ -132,10 +132,24 @@
                             </a>
                         </li>
                         <li class="nav-main-item">
-                            <a class="nav-main-link{{ request()->is('tasks') ? ' active' : '' }}"
+                            <a class="nav-main-link{{ request()->is('tasks*') ? ' active' : '' }}"
                                 href="{{ route('tasks.index') }}">
                                 <i class="nav-main-link-icon si si-cursor"></i>
                                 <span class="nav-main-link-name">Tasks</span>
+                            </a>
+                        </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link{{ request()->is('groups*') ? ' active' : '' }}"
+                                href="{{ route('groups.index') }}">
+                                <i class="nav-main-link-icon si si-cursor"></i>
+                                <span class="nav-main-link-name">Groups</span>
+                            </a>
+                        </li>
+                        <li class="nav-main-item">
+                            <a class="nav-main-link{{ request()->is('your-groups*') ? ' active' : '' }}"
+                                href="{{ route('groups.your-groups') }}">
+                                <i class="nav-main-link-icon si si-cursor"></i>
+                                <span class="nav-main-link-name">Your Groups</span>
                             </a>
                         </li>
 

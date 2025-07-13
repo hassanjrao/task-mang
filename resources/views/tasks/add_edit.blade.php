@@ -267,7 +267,7 @@
                         options: {
                             type: 'local',
                             file: {
-                                name: '{{ $attachment->original_name ?? "test" }}',
+                                name: '{{ $attachment->original_name ?? "file" }}',
                                 size: 123456, // Optional: fake size, not validated
                             },
                             metadata: {

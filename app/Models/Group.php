@@ -16,4 +16,15 @@ class Group extends Model
     {
         return $this->hasMany(Task::class, 'group_id');
     }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by')->withDefault();
+    }
+
+    public function groupMembers()
+    {
+        return $this->belongsToMany(User::class, 'group_members', 'group_id', 'user_id');
+    }
+
 }

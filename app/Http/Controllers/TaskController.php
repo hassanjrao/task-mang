@@ -41,7 +41,13 @@ class TaskController extends Controller
     {
         $task = null;
 
-        $groups = Group::latest()->get();
+        $groups = Group::where(function ($query) {
+            $query->where('created_by', auth()->id())
+                ->orWhereHas('groupMembers', function ($q) {
+                    $q->where('user_id', auth()->id());
+                });
+        })->latest()->get();
+        
         $users = User::where('id', '!=', auth()->id())
             ->latest()
             ->get();
@@ -130,7 +136,12 @@ class TaskController extends Controller
             })
             ->findOrFail($id);
 
-        $groups = Group::latest()->get();
+        $groups = Group::where(function ($query) {
+            $query->where('created_by', auth()->id())
+                ->orWhereHas('groupMembers', function ($q) {
+                    $q->where('user_id', auth()->id());
+                });
+        })->latest()->get();
         $users = User::where('id', '!=', auth()->id())
             ->latest()
             ->get();
@@ -279,6 +290,5 @@ class TaskController extends Controller
                 'file_path' => $filePath
             ]);
         }
-
     }
 }
