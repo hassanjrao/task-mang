@@ -287,7 +287,7 @@
     <!-- Laravel Scaffolding JS -->
     <script src="{{ asset('/js/laravel.app.js') }}"></script>
 
-    {{-- <script src="{{ asset('js/app.js') }}"></script> --}}
+    <script src="{{ asset('js/app.js') }}"></script>
 
     <script src="{{ asset('js/lib/jquery.min.js') }}"></script>
 
@@ -351,6 +351,61 @@
             })
         }
     </script>
+
+    <script>
+        Echo.channel('task-reminders')
+            .listen('.TaskDue', (e) => {
+                notifyTaskReminder(e.task);
+            });
+
+        function notifyTaskReminder(task) {
+            if (Notification.permission === 'granted') {
+                new Notification(task.title, {
+                    body: task.description
+                });
+            }
+
+            if (task.reminder_methods.includes('tts')) {
+                const speak = () => {
+                    const msg = new SpeechSynthesisUtterance(task.title);
+                    window.speechSynthesis.speak(msg);
+                };
+
+                if (speechSynthesis.getVoices().length === 0) {
+                    speechSynthesis.onvoiceschanged = () => speak();
+                } else {
+                    speak();
+                }
+            }
+
+            if (task.reminder_methods.includes('sound')) {
+                new Audio('/audio/error-bell.wav').play();
+            }
+        }
+
+        function triggerTestNotification() {
+            const task = {
+                title: 'Meeting with client',
+                description: 'Reminder: Your Zoom meeting starts in 10 minutes.',
+                reminder_methods: ['sound']
+            };
+            notifyTaskReminder(task);
+        }
+
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    // triggerTestNotification();
+                    console.log('Notification permission granted');
+                }
+            });
+        } else {
+            // triggerTestNotification();
+            console.log('Notification permission already granted');
+        }
+    </script>
+
+
 
     @yield('js_after')
 </body>

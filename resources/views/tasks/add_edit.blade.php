@@ -127,6 +127,74 @@
                                     @enderror
                                 </div>
 
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <?php
+                                    $value = old('due_datetime', $task ? $task->due_datetime : null);
+                                    ?>
+                                    <label class="form-label">Due Date & Time</label>
+                                    <input type="datetime-local" class="form-control" name="due_datetime"
+                                        value="{{ $value ? \Carbon\Carbon::parse($value)->format('Y-m-d\TH:i') : '' }}">
+                                    @error('due_datetime')
+                                        <span class="text-danger" role="alert">
+                                            <strong>{{ $message }}</strong>
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <label class="form-label">Remind me before</label>
+                                    <select name="reminder_offset" class="form-select">
+                                        <option value="">No Reminder</option>
+                                        <option value="0"
+                                            {{ old('reminder_offset', $task && $task->reminder_offset ? $task->reminder_offset : '') == 0 ? 'selected' : '' }}>
+                                            On
+                                            Time</option>
+                                        <option value="5"
+                                            {{ old('reminder_offset', $task && $task->reminder_offset ? $task->reminder_offset : '') == 5 ? 'selected' : '' }}>
+                                            5
+                                            mins</option>
+                                        <option value="10"
+                                            {{ old('reminder_offset', $task && $task->reminder_offset ? $task->reminder_offset : '') == 10 ? 'selected' : '' }}>
+                                            10 mins</option>
+                                        <option value="60"
+                                            {{ old('reminder_offset', $task && $task->reminder_offset ? $task->reminder_offset : '') == 60 ? 'selected' : '' }}>
+                                            1
+                                            hour</option>
+                                        <option value="1440"
+                                            {{ old('reminder_offset', $task && $task->reminder_offset ? $task->reminder_offset : '') == 1440 ? 'selected' : '' }}>
+                                            1 day</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-4 col-md-6 mb-4">
+                                    <label class="form-label">Reminder Type</label>
+                                    @php
+                                        $selectedMethods = old('reminder_methods', $task && $task->reminder_methods ? json_decode($task->reminder_methods, true) : []);
+                                    @endphp
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="reminder_methods[]"
+                                            value="web" {{ in_array('web', $selectedMethods) ? 'checked' : '' }}> Web
+                                        Notification
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="reminder_methods[]"
+                                            value="email" {{ in_array('email', $selectedMethods) ? 'checked' : '' }}>
+                                        Email
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="reminder_methods[]"
+                                            value="sound" {{ in_array('sound', $selectedMethods) ? 'checked' : '' }}> Play
+                                        Sound
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="reminder_methods[]"
+                                            value="tts" {{ in_array('tts', $selectedMethods) ? 'checked' : '' }}>
+                                        Text-to-Speech
+                                    </div>
+                                </div>
+
+
+
                                 <div class="col-lg-8 mb-4">
                                 </div>
                                 <div class="col-lg-6 col-md-6 col-sm-6 mb-4">
@@ -203,8 +271,8 @@
                                                 </div>
                                                 <div class="col-md-2">
                                                     <div class="form-check">
-                                                        <input type="checkbox" class="form-check-input" name="completed[]"
-                                                            id="completed_{{ $index }}"
+                                                        <input type="checkbox" class="form-check-input"
+                                                            name="completed[]" id="completed_{{ $index }}"
                                                             value="{{ $inputId }}"
                                                             {{ $isCompleted ? 'checked' : '' }}>
                                                         <label class="form-check-label"
@@ -261,13 +329,13 @@
         FilePond.registerPlugin();
         const pond = FilePond.create(document.querySelector('#fileUpload'), {
             files: [
-               @foreach (isset($task) && $task->attachments ? $task->attachments : [] as $attachment)
+                @foreach (isset($task) && $task->attachments ? $task->attachments : [] as $attachment)
                     {
                         source: '{{ $attachment->id }}',
                         options: {
                             type: 'local',
                             file: {
-                                name: '{{ $attachment->original_name ?? "file" }}',
+                                name: '{{ $attachment->original_name ?? 'file' }}',
                                 size: 123456, // Optional: fake size, not validated
                             },
                             metadata: {

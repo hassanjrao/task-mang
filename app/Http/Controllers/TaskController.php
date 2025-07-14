@@ -47,7 +47,7 @@ class TaskController extends Controller
                     $q->where('user_id', auth()->id());
                 });
         })->latest()->get();
-        
+
         $users = User::where('id', '!=', auth()->id())
             ->latest()
             ->get();
@@ -75,7 +75,10 @@ class TaskController extends Controller
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,docx,xlsx|max:5120', // 5MB max
             'group_id' => 'nullable|exists:groups,id',
-            'assigned_to' => 'nullable|exists:users,id'
+            'assigned_to' => 'nullable|exists:users,id',
+            'due_datetime' => 'nullable|date',
+            'reminder_offset' => 'nullable|integer',
+            'reminder_methods' => 'nullable|array'
         ]);
 
 
@@ -86,7 +89,10 @@ class TaskController extends Controller
             'task_status_id' => $validated['status'],
             'group_id' => $request->group_id,
             'created_by' => auth()->id(),
-            'assigned_to' => $request->assigned_to ? $request->assigned_to : null
+            'assigned_to' => $request->assigned_to ? $request->assigned_to : null,
+            'due_datetime' => $request->due_datetime,
+            'reminder_offset' => $request->reminder_offset,
+            'reminder_methods' => $request->reminder_methods ? json_encode($request->reminder_methods) : null,
         ]);
 
         $subTasks = $request->input('sub_tasks', []);
@@ -173,7 +179,11 @@ class TaskController extends Controller
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,docx,xlsx|max:5120', // 5MB max
             'group_id' => 'nullable|exists:groups,id',
+            'reminder_offset' => 'nullable|integer',
+            'reminder_methods' => 'nullable|array',
+            'due_datetime' => 'nullable|date',
         ]);
+
 
         $task->update([
             'title' => $validated['title'],
@@ -181,6 +191,9 @@ class TaskController extends Controller
             'priority_id' => $validated['priority'],
             'task_status_id' => $validated['status'],
             'group_id' => $request->group_id,
+            'due_datetime' => $request->due_datetime,
+            'reminder_offset' => $request->reminder_offset,
+            'reminder_methods' => $request->reminder_methods ? json_encode($request->reminder_methods) : null,
         ]);
 
         $submittedSubTasks = $request->input('sub_tasks', []);

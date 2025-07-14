@@ -27,6 +27,8 @@
     "dependencies": {
         "@popperjs/core": "^2.9.2",
         "bootstrap": "^5.0.1",
+        "laravel-echo": "^2.1.6",
+        "pusher-js": "^8.4.0",
         "simplebar": "^5.3.3"
     }
 }
