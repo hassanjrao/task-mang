@@ -168,7 +168,7 @@
                                     </select>
                                 </div>
 
-                                <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="col-lg-4 mb-4">
                                     <label class="form-label">Reminder Type</label>
                                     @php
                                         $selectedMethods = old(
@@ -200,11 +200,7 @@
                                     </div>
                                 </div>
 
-
-
-                                <div class="col-lg-8 mb-4">
-                                </div>
-                                <div class="col-lg-6 col-md-6 col-sm-6 mb-4">
+                                <div class="col-lg-8 col-md-6 col-sm-6 mb-4">
                                     <?php
                                     $value = old('description', $task ? $task->description : null);
 
