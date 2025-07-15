@@ -9,6 +9,8 @@
 
 @section('css_after')
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+
 @endsection
 
 @section('content')
@@ -169,7 +171,12 @@
                                 <div class="col-lg-4 col-md-6 mb-4">
                                     <label class="form-label">Reminder Type</label>
                                     @php
-                                        $selectedMethods = old('reminder_methods', $task && $task->reminder_methods ? json_decode($task->reminder_methods, true) : []);
+                                        $selectedMethods = old(
+                                            'reminder_methods',
+                                            $task && $task->reminder_methods
+                                                ? json_decode($task->reminder_methods, true)
+                                                : [],
+                                        );
                                     @endphp
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="reminder_methods[]"
@@ -213,19 +220,7 @@
                                         </span>
                                     @enderror
                                 </div>
-                                <div class="col-lg-6 mb-4">
-                                    <label class="form-label">Attachments</label>
-                                    <input type="file" name="file" id="fileUpload" multiple />
-                                    <div id="uploaded-files">
-                                        @if ($task && $task->attachments)
-                                            @foreach ($task->attachments as $attachment)
-                                                <input type="hidden" name="uploaded_attachments[]"
-                                                    value="{{ $attachment->id }}">
-                                            @endforeach
-                                        @endif
 
-                                    </div>
-                                </div>
 
 
                                 <div class="col-lg-12 col-md-12 col-sm-12 mb-4">
@@ -299,6 +294,64 @@
 
 
 
+                                <div class="col-lg-8">
+                                    @if ($task && $task->attachments && $task->attachments->count())
+                                        <div class="block mt-4 p-4 border rounded">
+                                            <h4 class="mb-3">Uploaded Attachments</h4>
+                                            <div class="row">
+                                                @foreach ($task->attachments as $attachment)
+                                                    <div class="col-md-3 mb-4">
+                                                        <div class="border rounded p-2 position-relative">
+                                                            @php
+                                                                $extension = pathinfo(
+                                                                    $attachment->file_path,
+                                                                    PATHINFO_EXTENSION,
+                                                                );
+                                                                $isImage = in_array(strtolower($extension), [
+                                                                    'jpg',
+                                                                    'jpeg',
+                                                                    'png',
+                                                                    'webp',
+                                                                ]);
+                                                            @endphp
+
+                                                            @if ($isImage)
+                                                                <img src="{{ asset($attachment->file_url) }}"
+                                                                    alt="{{ $attachment->original_name }}"
+                                                                    class="img-fluid mb-2"
+                                                                    style="max-height: 150px; object-fit: cover;">
+                                                            @else
+                                                                <div class="text-center py-4 bg-light">
+                                                                    <i class="fa fa-file fa-3x text-muted"></i>
+                                                                    <p class="mt-2">{{ $attachment->original_name }}</p>
+                                                                </div>
+                                                            @endif
+
+                                                            <div class="text-end">
+                                                                <a href="{{ $attachment->file_url }}" download
+                                                                    class="btn btn-sm btn-outline-primary">
+                                                                    <i class="fa fa-download"></i> Download
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="col-lg-4">
+                                    <label class="form-label">Attachments</label>
+                                    <input type="file" name="file" id="fileUpload" multiple />
+                                    <div id="uploaded-files">
+                                        @if ($task && $task->attachments)
+                                            @foreach ($task->attachments as $attachment)
+                                                <input type="hidden" name="uploaded_attachments[]"
+                                                    value="{{ $attachment->id }}">
+                                            @endforeach
+                                        @endif
+                                    </div>
+                                </div>
 
                                 <div class="col-lg-12 text-end">
 
@@ -314,6 +367,8 @@
 
                     </div>
                 </form>
+
+
             </div>
         </div>
     </div>
@@ -324,9 +379,10 @@
 
     <!-- JS -->
     <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
 
     <script>
-        FilePond.registerPlugin();
+        FilePond.registerPlugin(FilePondPluginImagePreview);
         const pond = FilePond.create(document.querySelector('#fileUpload'), {
             files: [
                 @foreach (isset($task) && $task->attachments ? $task->attachments : [] as $attachment)
@@ -336,16 +392,17 @@
                             type: 'local',
                             file: {
                                 name: '{{ $attachment->original_name ?? 'file' }}',
-                                size: 123456, // Optional: fake size, not validated
+                                size: '{{ $attachment->file_size }}', // Optional: fake size, not validated
                             },
                             metadata: {
-                                serverId: '{{ $attachment->file_url }}'
+                                serverId: '{{ $attachment->file_url }}',
                             }
                         }
                     },
                 @endforeach
             ],
             allowMultiple: true,
+            allowImagePreview: true,
             server: {
                 process: {
                     url: '{{ route('attachments.upload') }}',
@@ -358,7 +415,7 @@
                         let hidden = document.createElement('input');
                         hidden.type = 'hidden';
                         hidden.name = 'uploaded_attachments[]';
-                        hidden.value = response;
+                        hidden.value = response; // attachment ID
                         document.getElementById('uploaded-files').appendChild(hidden);
                         return response;
                     },

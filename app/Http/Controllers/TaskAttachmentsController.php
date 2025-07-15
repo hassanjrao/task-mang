@@ -21,9 +21,16 @@ class TaskAttachmentsController extends Controller
             return response()->json(['message' => 'Invalid file upload'], 422);
         }
 
-        $path = $file->store('uploads/tasks', 'public'); // make sure 'public' disk is set up
+        $attachment = new TaskAttachment();
+        $attachment->file_path = $file->store('uploads/tasks');
+        $attachment->original_name = $request->input('original_name', $file->getClientOriginalName());
+        $attachment->file_size = $request->input('file_size', $file->getSize());
 
-        return response($path, 200); // just return the path as plain text
+        // Optionally associate with task/user here
+        $attachment->save();
+
+
+        return response($attachment->id, 200); // just return the path as plain text
     }
 
 

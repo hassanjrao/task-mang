@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Group;
 use App\Models\Priority;
 use App\Models\Task;
+use App\Models\TaskAttachment;
 use App\Models\TaskStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -294,14 +295,15 @@ class TaskController extends Controller
 
     public function uploadAttachments(Task $task, $attachments)
     {
-        foreach ($attachments as $filePath) {
-            if (is_numeric($filePath)) {
-                // This is an existing attachment ID, skip it
-                continue;
+        foreach ($attachments as $attachmentId) {
+            if (is_numeric($attachmentId)) {
+                // Already stored attachment, just associate
+                $attachment = TaskAttachment::find($attachmentId);
+                if ($attachment && !$attachment->task_id) {
+                    $attachment->task_id = $task->id;
+                    $attachment->save();
+                }
             }
-            $task->attachments()->create([
-                'file_path' => $filePath
-            ]);
         }
     }
 }
