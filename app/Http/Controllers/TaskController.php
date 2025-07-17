@@ -21,7 +21,10 @@ class TaskController extends Controller
     {
         $tasks = Task::with(['createdBy', 'assignedTo', 'group'])
             ->where(function ($query) {
-                $query->where('created_by', auth()->id());
+                $query->where('created_by', auth()->id())
+                      ->orWhereHas('assignedUsers', function ($q) {
+                          $q->where('user_id', auth()->id());
+                      });
             })
             ->latest()
             ->get();
