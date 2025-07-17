@@ -43,8 +43,9 @@ class SendTaskRemindersCommand extends Command
     {
         $now = Carbon::now();
 
-        $task=Task::first();
+        $task=Task::fist();
         broadcast(new TaskReminderEvent($task));
+        dispatch(new SendTaskReminderJob($task));
 
 
         // Task::whereNotNull('due_datetime')

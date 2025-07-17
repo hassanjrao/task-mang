@@ -34,15 +34,32 @@ class SendTaskReminderJob implements ShouldQueue
      */
     public function handle()
     {
+        $notifiedUserIds = [];
         Log::info('Sending task reminder for task ID: ' . $this->task->id);
+
         $methods = json_decode($this->task->reminder_methods ?? '[]');
 
-        if (in_array('email', $methods)) {
-            $this->task->createdBy->notify(new TaskReminderEmailNotification($this->task));
+        foreach ($this->task->assignedUsers as $user) {
+            $notifiedUserIds[] = $user->id;
+
+            if (in_array('email', $methods)) {
+                $user->notify(new TaskReminderEmailNotification($this->task));
+            }
+
+            if (in_array('web', $methods)) {
+                // $user->notify(new TaskWebNotification($this->task));
+            }
         }
 
-        if (in_array('web', $methods)) {
-            // Notification::send($this->task->user, new TaskWebNotification($this->task));
+        // Notify creator if not already in assigned users
+        if (!in_array($this->task->created_by, $notifiedUserIds)) {
+            if (in_array('email', $methods)) {
+                $this->task->createdBy->notify(new TaskReminderEmailNotification($this->task));
+            }
+
+            if (in_array('web', $methods)) {
+                // $this->task->createdBy->notify(new TaskWebNotification($this->task));
+            }
         }
     }
 }
