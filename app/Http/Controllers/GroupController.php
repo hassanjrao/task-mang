@@ -72,7 +72,13 @@ class GroupController extends Controller
      */
     public function edit($id)
     {
-        //
+        $group = Group::findOrFail($id);
+
+        if ($group->created_by !== auth()->id()) {
+            abort(403, 'You do not have permission to edit this group.');
+        }
+
+        return view('groups.add_edit', compact('group'));
     }
 
     /**
@@ -84,7 +90,23 @@ class GroupController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+        ]);
+
+        $group = Group::findOrFail($id);
+
+        if ($group->created_by !== auth()->id()) {
+            abort(403, 'You do not have permission to update this group.');
+        }
+
+        $group->update([
+            'name' => $request->input('name'),
+            'description' => $request->input('description'),
+        ]);
+
+        return redirect()->route('groups.index')->withToastSuccess('Group updated successfully.');
     }
 
     /**
@@ -95,7 +117,15 @@ class GroupController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $group = Group::findOrFail($id);
+
+        if ($group->created_by !== auth()->id()) {
+            abort(403, 'You do not have permission to delete this group.');
+        }
+
+        $group->delete();
+
+        return redirect()->route('groups.index')->withToastSuccess('Group deleted successfully.');
     }
 
     public function join(Group $group)
