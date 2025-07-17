@@ -282,14 +282,11 @@
 
             Core libraries and functionality
         -->
-    <script src="{{ asset('js/oneui.app.js') }}"></script>
 
-    <!-- Laravel Scaffolding JS -->
-    <script src="{{ asset('/js/laravel.app.js') }}"></script>
-
-    <script src="{{ asset('js/app.js') }}"></script>
 
     <script src="{{ asset('js/lib/jquery.min.js') }}"></script>
+
+
 
     <!-- Page JS Plugins -->
     <script src="{{ asset('js/plugins/datatables/jquery.dataTables.min.js') }}"></script>
@@ -312,12 +309,19 @@
     <script src="{{ asset('js/plugins/dropzone/min/dropzone.min.js') }}"></script>
     <script src="{{ asset('js/plugins/ckeditor5-classic/build/ckeditor.js') }}"></script>
 
+    {{-- <script src="{{ asset('js/oneui.app.js') }}"></script> --}}
+
+    <script src="{{ asset('js/app.js') }}"></script>
+
+    <!-- Laravel Scaffolding JS -->
+    {{-- <script src="{{ asset('/js/laravel.app.js') }}"></script> --}}
+
 
 
 
     <!-- Page JS Helpers (Flatpickr + BS Datepicker + BS Maxlength + Select2 + Masked Inputs + Ion Range Slider + BS Colorpicker plugins) -->
     <script>
-        One.helpersOnLoad(['jq-select2']);
+        // One.helpersOnLoad(['jq-select2']);
     </script>
 
 

@@ -1,7 +1,6 @@
 @extends('layouts.app')
-
+@section('page-name', 'Login')
 @section('content')
-
     <!-- Page Content -->
     <div class="hero-static d-flex align-items-center">
         <div class="content">
@@ -35,12 +34,26 @@
                                     @csrf
                                     <div class="py-3">
                                         <div class="mb-4">
-                                             <label for="email">{{ __('Email') }}</label>
-                                            <input type="email"
-                                                class="form-control form-control-alt form-control-lg @error('email') is-invalid @enderror"
-                                                value="{{ old('email') }}" required autocomplete="email" autofocus
-                                                id="login-username" name="email" placeholder="Email">
-                                            @error('email')
+                                            <label for="login_with">{{ __('Login With') }}</label>
+                                            <select name="login_with" id="login_with" class="form-select" required>
+                                                <option value="email">Email</option>
+                                                <option value="phone">Phone</option>
+                                                <option value="username">Username</option>
+                                            </select>
+                                            @error('login_with')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                        <div class="mb-4">
+                                            <label for="login">{{ __('Email / Phone / Username') }}</label>
+                                            <input type="text"
+                                                class="form-control form-control-alt form-control-lg @error('login') is-invalid @enderror"
+                                                value="{{ old('login') }}" required autofocus id="login" name="login"
+                                                placeholder="Enter email, phone or username">
+
+                                            @error('login')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
                                                 </span>
@@ -96,7 +109,7 @@
                 </div>
             </div>
             <div class="fs-sm text-muted text-center">
-                <strong>{{ config("app.name") }}, All Rights Reserved </strong> &copy; <span
+                <strong>{{ config('app.name') }}, All Rights Reserved </strong> &copy; <span
                     data-toggle="year-copy"></span>
             </div>
             <br>

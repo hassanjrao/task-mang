@@ -55,6 +55,8 @@ class RegisterController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'min:8', 'same:password'],
             'role' => ['required', 'string', 'in:admin,student,worker'],
+            'phone' => ['nullable', 'string', 'max:15', 'unique:users'],
+            'username' => ['nullable', 'string', 'max:255', 'unique:users'],
         ]);
     }
 
@@ -70,6 +72,8 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'phone' => $data['phone'] ?? null,
+            'username' => $data['username'] ?? null,
         ]);
         $user->assignRole($data['role']); // Assign the role to the user
         return $user;

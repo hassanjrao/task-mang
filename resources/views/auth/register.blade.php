@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+@section('page-name', 'Register')
 @section('content')
     <!-- Page Content -->
     <div class="hero-static d-flex align-items-center">
@@ -41,8 +41,36 @@
                                                     <input type="name"
                                                         class="form-control form-control-alt form-control-lg @error('name') is-invalid @enderror"
                                                         value="{{ old('name') }}" required autocomplete="name" autofocus
-                                                        id="login-username" name="name" placeholder="name">
+                                                        id="login-username" name="name" placeholder="Name">
                                                     @error('name')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-4">
+                                                    <label for="phone">{{ __('Phone') }}</label>
+                                                    <input type="tel"
+                                                        class="form-control form-control-alt form-control-lg @error('phone') is-invalid @enderror"
+                                                        value="{{ old('phone') }}" required autocomplete="phone" autofocus
+                                                        id="login-userphone" name="phone" placeholder="Phone">
+                                                    @error('phone')
+                                                        <span class="invalid-feedback" role="alert">
+                                                            <strong>{{ $message }}</strong>
+                                                        </span>
+                                                    @enderror
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-4">
+                                                    <label for="username">{{ __('Username') }}</label>
+                                                    <input type="text"
+                                                        class="form-control form-control-alt form-control-lg @error('username') is-invalid @enderror"
+                                                        value="{{ old('username') }}" required autocomplete="username" autofocus
+                                                        id="login-userusername" name="username" placeholder="username">
+                                                    @error('username')
                                                         <span class="invalid-feedback" role="alert">
                                                             <strong>{{ $message }}</strong>
                                                         </span>
