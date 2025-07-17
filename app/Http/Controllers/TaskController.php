@@ -306,7 +306,7 @@ class TaskController extends Controller
 
     public function uploadAttachments(Task $task, $attachments)
     {
-        foreach ($attachments as $attachmentId) {
+        foreach ((array)$attachments as $attachmentId) {
             if (is_numeric($attachmentId)) {
                 // Already stored attachment, just associate
                 $attachment = TaskAttachment::find($attachmentId);
