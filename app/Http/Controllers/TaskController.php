@@ -137,7 +137,10 @@ class TaskController extends Controller
 
         $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
             ->where(function ($query) {
-                $query->where('created_by', auth()->id());
+                $query->where('created_by', auth()->id())
+                        ->orWhereHas('assignedUsers', function ($q) {
+                            $q->where('user_id', auth()->id());
+                        });
             })
             ->findOrFail($id);
 
