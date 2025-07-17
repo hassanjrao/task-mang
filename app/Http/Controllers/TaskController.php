@@ -21,8 +21,7 @@ class TaskController extends Controller
     {
         $tasks = Task::with(['createdBy', 'assignedTo', 'group'])
             ->where(function ($query) {
-                $query->where('created_by', auth()->id())
-                    ->orWhere('assigned_to', auth()->id());
+                $query->where('created_by', auth()->id());
             })
             ->latest()
             ->get();
@@ -42,12 +41,7 @@ class TaskController extends Controller
     {
         $task = null;
 
-        $groups = Group::where(function ($query) {
-            $query->where('created_by', auth()->id())
-                ->orWhereHas('groupMembers', function ($q) {
-                    $q->where('user_id', auth()->id());
-                });
-        })->latest()->get();
+        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
 
         $users = User::where('id', '!=', auth()->id())
             ->latest()
@@ -55,7 +49,7 @@ class TaskController extends Controller
         $priorities = Priority::all();
         $taskStatuses = TaskStatus::all();
 
-        return view('tasks.add_edit', compact('task', 'groups', 'users', 'priorities', 'taskStatuses'));
+        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses'));
     }
 
     /**
@@ -76,11 +70,20 @@ class TaskController extends Controller
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,docx,xlsx|max:5120', // 5MB max
             'group_id' => 'nullable|exists:groups,id',
-            'assigned_to' => 'nullable|exists:users,id',
+            'assigned_to' => 'nullable',
             'due_datetime' => 'nullable|date',
             'reminder_offset' => 'nullable|integer',
             'reminder_methods' => 'nullable|array'
         ]);
+
+
+        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
+
+        foreach ($request->assigned_to as $userId) {
+            if (!in_array($userId, $assignableUsers->pluck('id')->toArray())) {
+                abort(403, 'User not in your group');
+            }
+        }
 
 
         $task = Task::create([
@@ -90,11 +93,13 @@ class TaskController extends Controller
             'task_status_id' => $validated['status'],
             'group_id' => $request->group_id,
             'created_by' => auth()->id(),
-            'assigned_to' => $request->assigned_to ? $request->assigned_to : null,
             'due_datetime' => $request->due_datetime,
             'reminder_offset' => $request->reminder_offset,
             'reminder_methods' => $request->reminder_methods ? json_encode($request->reminder_methods) : null,
         ]);
+
+        // Sync assigned users
+        $task->assignedUsers()->sync($request->assigned_to);
 
         $subTasks = $request->input('sub_tasks', []);
         $completed = $request->input('completed', []); // Contains values like new_0, new_1
@@ -138,17 +143,13 @@ class TaskController extends Controller
 
         $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
             ->where(function ($query) {
-                $query->where('created_by', auth()->id())
-                    ->orWhere('assigned_to', auth()->id());
+                $query->where('created_by', auth()->id());
             })
             ->findOrFail($id);
 
-        $groups = Group::where(function ($query) {
-            $query->where('created_by', auth()->id())
-                ->orWhereHas('groupMembers', function ($q) {
-                    $q->where('user_id', auth()->id());
-                });
-        })->latest()->get();
+        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
+
+
         $users = User::where('id', '!=', auth()->id())
             ->latest()
             ->get();
@@ -157,7 +158,7 @@ class TaskController extends Controller
         $subTasks = $task->subTasks;
 
 
-        return view('tasks.add_edit', compact('task', 'groups', 'users', 'priorities', 'taskStatuses', 'subTasks'));
+        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'subTasks'));
     }
 
     /**
@@ -179,11 +180,18 @@ class TaskController extends Controller
             'sub_task_ids' => 'array',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,docx,xlsx|max:5120', // 5MB max
-            'group_id' => 'nullable|exists:groups,id',
             'reminder_offset' => 'nullable|integer',
             'reminder_methods' => 'nullable|array',
             'due_datetime' => 'nullable|date',
         ]);
+
+        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
+
+        foreach ($request->assigned_to as $userId) {
+            if (!in_array($userId, $assignableUsers->pluck('id')->toArray())) {
+                abort(403, 'User not in your group');
+            }
+        }
 
 
         $task->update([
@@ -196,6 +204,8 @@ class TaskController extends Controller
             'reminder_offset' => $request->reminder_offset,
             'reminder_methods' => $request->reminder_methods ? json_encode($request->reminder_methods) : null,
         ]);
+
+        $task->assignedUsers()->sync($request->input('assigned_to', []));
 
         $submittedSubTasks = $request->input('sub_tasks', []);
         $submittedIds = $request->input('sub_task_ids', []);
@@ -261,8 +271,7 @@ class TaskController extends Controller
     public function destroy($id)
     {
         $task = Task::where(function ($query) {
-            $query->where('created_by', auth()->id())
-                ->orWhere('assigned_to', auth()->id());
+            $query->where('created_by', auth()->id());
         })->findOrFail($id);
 
         $task->delete();

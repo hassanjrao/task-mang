@@ -64,25 +64,23 @@
                                 </div>
 
                                 <div class="col-lg-4 col-md-4 col-sm-12 mb-4">
-                                    <?php
-                                    $value = old('group_id', $task ? $task->group_id : null);
-                                    ?>
-                                    <label class="form-label" for="label"> Group <span
-                                            class="text-danger"></span></label>
-                                    <select class="form-select" id="group_id" name="group_id">
-                                        <option value="">Select Group</option>
-                                        @foreach ($groups as $group)
-                                            <option value="{{ $group->id }}"
-                                                {{ $value == $group->id ? 'selected' : '' }}>
-                                                {{ $group->name }}
+
+                                    <label class="form-label">Assignies <span class="text-danger">*</span></label>
+                                    <select name="assigned_to[]" class="form-control" multiple>
+                                        @foreach ($assignableUsers as $user)
+                                            <option value="{{ $user->id }}"
+                                                {{ isset($task) && $task->assignedUsers->contains($user->id) ? 'selected' : '' }}>
+                                                {{ $user->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('group_id')
+
+                                    @error('assigned_to')
                                         <span class="text-danger" role="alert">
                                             <strong>{{ $message }}</strong>
                                         </span>
                                     @enderror
+
                                 </div>
 
                                 <div class="col-lg-4 col-md-4 col-sm-12 mb-4">

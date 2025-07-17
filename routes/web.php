@@ -28,6 +28,10 @@ Route::middleware(["auth"])->group(function () {
         return view('dashboard');
     })->name('dashboard.index');
 
+      Route::match(['get'], '/', function () {
+        return view('dashboard');
+    })->name('dashboard.index');
+
     Route::resource('profile', ProfileController::class)->only(['index', 'update']);
 
     Route::resource('tasks', TaskController::class);
