@@ -49,6 +49,8 @@ class TaskController extends Controller
         $priorities = Priority::all();
         $taskStatuses = TaskStatus::all();
 
+        $canEdit = true; // Always true for create
+
         return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses'));
     }
 
