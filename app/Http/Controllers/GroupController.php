@@ -44,11 +44,14 @@ class GroupController extends Controller
             'description' => 'nullable|string|max:1000',
         ]);
 
-        Group::create([
+        $group= Group::create([
             'name' => $request->input('name'),
             'description' => $request->input('description'),
             'created_by' => auth()->id(),
         ]);
+
+        // Automatically join the creator to the group
+        $group->groupMembers()->attach(auth()->id());
 
         return redirect()->route('groups.index')->withToastSuccess('Group created successfully.');
     }
