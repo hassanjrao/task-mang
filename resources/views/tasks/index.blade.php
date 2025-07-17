@@ -32,7 +32,6 @@
                                 <th>Title</th>
                                 <th>Description</th>
                                 <th>Created By</th>
-                                <th>Group</th>
                                 <th>Assigned To</th>
                                 <th>Priority</th>
                                 <th style="width: 250px !important;">Status</th>
@@ -53,7 +52,6 @@
                                     <td>{{ $task->title }}</td>
                                     <td>{{ $task->description }}</td>
                                     <td>{{ $task->createdBy->name }}</td>
-                                    <td>{{ $task->group->name }}</td>
                                     <td>{{ $task->assignedTo->name }}</td>
                                     <td>
                                         {{-- select box to update priority --}}
