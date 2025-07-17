@@ -74,7 +74,9 @@ class ProfileController extends Controller
             'name'=>'required',
             'email'=>'required|email',
             'password'=>'nullable|min:6',
-            'old_password'=>'required_with:password'
+            'old_password'=>'required_with:password',
+            'phone'=>'nullable|string|max:15|unique:users,phone,'.$id,
+            'username'=>'nullable|string|max:255|unique:users,username,'.$id,
         ]);
 
         if($request->password){
@@ -88,6 +90,8 @@ class ProfileController extends Controller
 
         $user->name=$request->name;
         $user->email=$request->email;
+        $user->phone=$request->phone;
+        $user->username=$request->username;
         if($request->password){
             $user->password=bcrypt($request->password);
         }

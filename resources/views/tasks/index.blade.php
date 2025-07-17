@@ -32,6 +32,7 @@
                                 <th>Title</th>
                                 <th>Description</th>
                                 <th>Created By</th>
+                                <th>Due Date</th>
                                 <th>Assignies</th>
                                 <th>Priority</th>
                                 <th style="width: 250px !important;">Status</th>
@@ -56,6 +57,13 @@
                                             <span class="badge bg-success">{{ $task->createdBy->name }}</span>
                                         @else
                                             <span class="badge bg-secondary">Unknown</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($task->due_datetime)
+                                            <span class="badge bg-danger">{{ $task->due_datetime }}</span>
+                                        @else
+                                            <span class="badge bg-secondary">No Due Date</span>
                                         @endif
                                     </td>
                                     <td>

@@ -309,12 +309,12 @@
     <script src="{{ asset('js/plugins/dropzone/min/dropzone.min.js') }}"></script>
     <script src="{{ asset('js/plugins/ckeditor5-classic/build/ckeditor.js') }}"></script>
 
-    {{-- <script src="{{ asset('js/oneui.app.js') }}"></script> --}}
+    <script src="{{ asset('js/oneui.app.js') }}"></script>
 
     <script src="{{ asset('js/app.js') }}"></script>
 
     <!-- Laravel Scaffolding JS -->
-    {{-- <script src="{{ asset('/js/laravel.app.js') }}"></script> --}}
+    <script src="{{ asset('/js/laravel.app.js') }}"></script>
 
 
 
