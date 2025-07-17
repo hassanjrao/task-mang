@@ -126,6 +126,9 @@ class GroupController extends Controller
             abort(403, 'You do not have permission to delete this group.');
         }
 
+        // Detach all members before deleting the group
+        $group->groupMembers()->detach();
+
         $group->delete();
 
         return redirect()->route('groups.index')->withToastSuccess('Group deleted successfully.');
