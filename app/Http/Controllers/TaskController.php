@@ -76,20 +76,15 @@ class TaskController extends Controller
             'reminder_methods' => 'nullable|array'
         ]);
 
-        dump($request->all());
+
         $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
 
-        if(!$request->has('assigned_to') || empty($request->assigned_to) ) {
-            $request->merge(['assigned_to' => [$request->created_by]]);
-        }
-        dd($request->assigned_to);
 
-        foreach ($request->assigned_to as $userId) {
-            if (!in_array($userId, $assignableUsers->pluck('id')->toArray()) && $userId != $request->created_by) {
+        foreach ((array) $request->assigned_to as $userId) {
+            if (!in_array($userId, $assignableUsers->pluck('id')->toArray())) {
                 abort(403, 'User not in your group');
             }
         }
-
 
         $task = Task::create([
             'title' => $validated['title'],
@@ -103,8 +98,8 @@ class TaskController extends Controller
             'reminder_methods' => $request->reminder_methods ? json_encode($request->reminder_methods) : null,
         ]);
 
-        // Sync assigned users
-        $task->assignedUsers()->sync($request->assigned_to);
+        $assignedTo = $request->input('assigned_to', []) ?: [auth()->id()];
+        $task->assignedUsers()->sync($assignedTo);
 
         $subTasks = $request->input('sub_tasks', []);
         $completed = $request->input('completed', []); // Contains values like new_0, new_1
@@ -192,15 +187,12 @@ class TaskController extends Controller
 
         $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
 
-        if(!$request->has('assigned_to') || empty($request->assigned_to)) {
-            $request->merge(['assigned_to' => [$request->created_by]]);
-        }
-
-        foreach ($request->assigned_to as $userId) {
-            if (!in_array($userId, $assignableUsers->pluck('id')->toArray()) && $userId != $task->created_by) {
+        foreach ((array) $request->assigned_to as $userId) {
+            if (!in_array($userId, $assignableUsers->pluck('id')->toArray())) {
                 abort(403, 'User not in your group');
             }
         }
+
 
 
         $task->update([
@@ -213,8 +205,9 @@ class TaskController extends Controller
             'reminder_offset' => $request->reminder_offset,
             'reminder_methods' => $request->reminder_methods ? json_encode($request->reminder_methods) : null,
         ]);
+        $assignedTo = $request->input('assigned_to', []) ?: [auth()->id()];
+        $task->assignedUsers()->sync($assignedTo);
 
-        $task->assignedUsers()->sync($request->input('assigned_to', []));
 
         $submittedSubTasks = $request->input('sub_tasks', []);
         $submittedIds = $request->input('sub_task_ids', []);
