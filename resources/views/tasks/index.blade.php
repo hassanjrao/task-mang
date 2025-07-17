@@ -32,7 +32,7 @@
                                 <th>Title</th>
                                 <th>Description</th>
                                 <th>Created By</th>
-                                <th>Assigned To</th>
+                                <th>Assignies</th>
                                 <th>Priority</th>
                                 <th style="width: 250px !important;">Status</th>
                                 <th>Created At</th>
@@ -52,7 +52,16 @@
                                     <td>{{ $task->title }}</td>
                                     <td>{{ $task->description }}</td>
                                     <td>{{ $task->createdBy->name }}</td>
-                                    <td>{{ $task->assignedTo->name }}</td>
+                                    <td>
+                                        @if ($task->assignedUsers->count() > 0)
+                                            {{-- show assigned users as badges --}}
+                                            @foreach ($task->assignedUsers as $user)
+                                                <span class="badge bg-primary">{{ $user->name }}</span>
+                                            @endforeach
+                                        @else
+                                            <span class="badge bg-secondary">No Assignee</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         {{-- select box to update priority --}}
                                         <form action="{{ route('tasks.update-priority', $task->id) }}" method="POST">
