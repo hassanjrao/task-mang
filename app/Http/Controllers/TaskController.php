@@ -51,7 +51,7 @@ class TaskController extends Controller
 
         $canEdit = true; // Always true for create
 
-        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses'));
+        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'canEdit'));
     }
 
     /**
