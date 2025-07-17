@@ -76,12 +76,13 @@ class TaskController extends Controller
             'reminder_methods' => 'nullable|array'
         ]);
 
-
+        dump($request->all());
         $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
 
         if(!$request->has('assigned_to') || empty($request->assigned_to) ) {
             $request->merge(['assigned_to' => [$request->created_by]]);
         }
+        dd($request->assigned_to);
 
         foreach ($request->assigned_to as $userId) {
             if (!in_array($userId, $assignableUsers->pluck('id')->toArray()) && $userId != $request->created_by) {
