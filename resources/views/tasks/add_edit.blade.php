@@ -65,7 +65,7 @@
 
                                 <div class="col-lg-4 col-md-4 col-sm-12 mb-4">
 
-                                    <label class="form-label">Assignies <span class="text-danger">*</span></label>
+                                    <label class="form-label">Assignies <span class="text-danger"></span></label>
                                     <select name="assigned_to[]" class="form-control" multiple>
                                         @foreach ($assignableUsers as $user)
                                             <option value="{{ $user->id }}"
