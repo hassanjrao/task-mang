@@ -51,7 +51,13 @@
                                     <td>{{ $ind + 1 }}</td>
                                     <td>{{ $task->title }}</td>
                                     <td>{{ $task->description }}</td>
-                                    <td>{{ $task->createdBy->name }}</td>
+                                    <td>
+                                        @if ($task->createdBy)
+                                            <span class="badge bg-success">{{ $task->createdBy->name }}</span>
+                                        @else
+                                            <span class="badge bg-secondary">Unknown</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @if ($task->assignedUsers->count() > 0)
                                             {{-- show assigned users as badges --}}
