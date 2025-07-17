@@ -86,23 +86,30 @@
                                     <td>{{ $task->updated_at }}</td>
 
                                     <td>
-                                        <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-sm btn-primary"
-                                            data-toggle="tooltip" title="Edit">
-                                            <i class="fa fa-pencil-alt"></i>
-                                        </a>
-                                        <form id="form-{{ $task->id }}"
-                                            action="{{ route('tasks.destroy', $task->id) }}" method="POST">
-                                            @method('DELETE')
-                                            @csrf
-                                            <button type="button" onclick="confirmDelete({{ $task->id }})" class="btn btn-sm btn-danger" data-toggle="tooltip"
-                                                title="Delete">
-                                                <i class="fa fa-trash"></i>
-                                            </button>
+                                        @if ($task->created_by == auth()->id())
+                                            <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-sm btn-primary"
+                                                data-toggle="tooltip" title="Edit">
+                                                <i class="fa fa-pencil-alt"></i>
+                                            </a>
+                                            <form id="form-{{ $task->id }}"
+                                                action="{{ route('tasks.destroy', $task->id) }}" method="POST">
+                                                @method('DELETE')
+                                                @csrf
+                                                <button type="button" onclick="confirmDelete({{ $task->id }})"
+                                                    class="btn btn-sm btn-danger" data-toggle="tooltip" title="Delete">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
 
-                                        </form>
+                                            </form>
+                                        @else
+                                            {{-- view button --}}
+                                            <a href="{{ route('tasks.show', $task->id) }}" class="btn btn-sm btn-info"
+                                                data-toggle="tooltip" title="View">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                        @endif
+
                                     </td>
-
-
                                 </tr>
                             @endforeach
                         </tbody>

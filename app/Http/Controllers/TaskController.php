@@ -129,7 +129,26 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        //
+
+        $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
+            ->where(function ($query) {
+                $query->where('created_by', auth()->id());
+            })
+            ->findOrFail($id);
+
+        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
+
+
+        $users = User::where('id', '!=', auth()->id())
+            ->latest()
+            ->get();
+        $priorities = Priority::all();
+        $taskStatuses = TaskStatus::all();
+        $subTasks = $task->subTasks;
+
+        $canEdit = $task->created_by === auth()->id();
+
+        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'subTasks', 'canEdit'));
     }
 
     /**
@@ -157,8 +176,13 @@ class TaskController extends Controller
         $taskStatuses = TaskStatus::all();
         $subTasks = $task->subTasks;
 
+        $canEdit = $task->created_by === auth()->id();
 
-        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'subTasks'));
+        if(!$canEdit) {
+            abort(403, 'You do not have permission to edit this task.');
+        }
+
+        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'subTasks', 'canEdit'));
     }
 
     /**
