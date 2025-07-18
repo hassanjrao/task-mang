@@ -17,7 +17,7 @@
         @change="onTabChange"
       >
         <v-tab v-for="(tab, ind) in statuses" :key="ind">
-          {{ tab.name }}
+          {{ tab.name }} ({{ tab.total_tasks || 0 }})
         </v-tab>
       </v-tabs>
       <v-data-table
@@ -44,22 +44,34 @@
           </v-chip>
         </template>
 
-        <!-- show priority in badges -->
+        <template v-slot:item.status="{ item }">
+          <v-select
+            :items="statuses"
+            item-value="id"
+            item-text="name"
+            v-model="item.status.id"
+            x-small
+            chips
+            @change="updateTaskStatus(item)"
+          />
+        </template>
+
         <template v-slot:item.priority="{ item }">
-          <v-chip color="warning" small class="ma-1" dark>
-            {{ item.priority }}
-          </v-chip>
+          <v-select
+            :items="priorities"
+            item-value="id"
+            item-text="name"
+            v-model="item.priority.id"
+            x-small
+            chips
+            color="primary"
+            @change="updateTaskPriority(item)"
+          />
         </template>
 
         <template v-slot:item.due_datetime="{ item }">
           <v-chip color="info" small class="ma-1" dark>
             {{ item.due_datetime }}
-          </v-chip>
-        </template>
-
-        <template v-slot:item.status="{ item }">
-          <v-chip color="danger" small class="ma-1" dark>
-            {{ item.status }}
           </v-chip>
         </template>
 
@@ -106,8 +118,9 @@ export default {
     return {
       statuses: [],
       tasks: [],
-      selectedTab: null,
+      selectedTab: 0,
       loading: false,
+      priorities: [],
       headers: [
         { text: "#", value: "index", sortable: true },
         { text: "Title", value: "title", sortable: false },
@@ -131,10 +144,10 @@ export default {
       axios
         .get("/task-statuses")
         .then((res) => {
-          this.statuses = res.data;
+          this.statuses = res.data.statuses;
+          this.priorities = res.data.priorities || [];
           if (this.statuses.length) {
-            this.selectedTab = 0;
-            this.fetchTasks(this.statuses[0].id);
+            this.fetchTasks(this.selectedTab ? this.statuses[this.selectedTab].id : this.statuses[0].id);
           }
         })
         .finally(() => {
@@ -178,6 +191,38 @@ export default {
           });
       }
     },
+    updateTaskStatus(item) {
+      this.loading = true;
+      axios
+        .put(`/tasks/${item.id}/update-status`, { status_id: item.status.id })
+        .then(() => {
+          this.fetchStatuses();
+          this.loading = false;
+        })
+        .catch((error) => {
+          console.error("Error updating task status:", error);
+          alert("Failed to update task status.");
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    updateTaskPriority(item) {
+      this.loading = true;
+      axios
+        .put(`/tasks/${item.id}/update-priority`, { priority_id: item.priority.id })
+        .then(() => {
+          this.fetchStatuses();
+          this.loading = false;
+        })
+        .catch((error) => {
+          console.error("Error updating task priority:", error);
+          alert("Failed to update task priority.");
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    }
   },
 };
 </script>

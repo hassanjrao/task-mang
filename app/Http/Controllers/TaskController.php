@@ -321,8 +321,8 @@ class TaskController extends Controller
         $task = Task::where(function ($query) {
             $query->where('created_by', auth()->id());
         })
-        ->where('id',(int)$id)
-        ->first();
+            ->where('id', (int)$id)
+            ->first();
 
         $task->delete();
 
@@ -334,23 +334,27 @@ class TaskController extends Controller
     public function updatePriority(Request $request, Task $task)
     {
         $request->validate([
-            'priority' => 'required|exists:priorities,id',
+            'priority_id' => 'required|exists:priorities,id',
         ]);
 
-        $task->update(['priority_id' => $request->priority]);
+        $task->update(['priority_id' => $request->priority_id]);
 
-        return redirect()->back()->withToastSuccess('Task priority updated successfully.');
+        return response()->json([
+            'message' => 'Task priority updated successfully.',
+        ]);
     }
 
     public function updateStatus(Request $request, Task $task)
     {
         $request->validate([
-            'status' => 'required|exists:task_statuses,id',
+            'status_id' => 'required|exists:task_statuses,id',
         ]);
 
-        $task->update(['task_status_id' => $request->status]);
+        $task->update(['task_status_id' => $request->status_id]);
 
-        return redirect()->back()->withToastSuccess('Task status updated successfully.');
+        return response()->json([
+            'message' => 'Task status updated successfully.',
+        ]);
     }
 
 
@@ -410,8 +414,8 @@ class TaskController extends Controller
                 'description' => $task->description,
                 'created_by' => $task->createdBy ? $task->createdBy->name : 'N/A',
                 'assignies' => $assignies,
-                'priority' => $task->priority ? $task->priority->name : 'N/A',
-                'status' => $task->status ? $task->status->name : 'N/A',
+                'priority' => $task->priority ? $task->priority->only(['id', 'name']) : null,
+                'status' => $task->status ? $task->status->only(['id', 'name']) : null,
                 'due_datetime' => $task->due_datetime,
                 'created_at' => $task->created_at->format('Y-m-d H:i:s'),
                 'can_edit' => $task->created_by === auth()->id(),
@@ -422,6 +426,41 @@ class TaskController extends Controller
 
         return response()->json([
             'tasks' => $tasks
+        ]);
+    }
+
+    public function statusesWithTaskCount()
+    {
+        $userId = auth()->id();
+
+        $statuses = TaskStatus::withCount([
+            'tasks as total_tasks' => function ($query) use ($userId) {
+                $query->where(function ($q) use ($userId) {
+                    $q->where('created_by', $userId)
+                        ->orWhereHas('assignedUsers', function ($q2) use ($userId) {
+                            $q2->where('user_id', $userId);
+                        });
+                });
+            }
+        ])->get();
+        $statuses = $statuses->map(function ($status) {
+            return [
+                'id' => $status->id,
+                'name' => $status->name,
+                'total_tasks' => $status->total_tasks,
+            ];
+        });
+
+        $priorities=Priority::all()->map(function ($priority) {
+            return [
+                'id' => $priority->id,
+                'name' => $priority->name,
+            ];
+        });
+
+        return response()->json([
+            'statuses' => $statuses,
+            'priorities' => $priorities
         ]);
     }
 }

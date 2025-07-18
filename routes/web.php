@@ -49,7 +49,5 @@ Route::middleware(["auth"])->group(function () {
     // your groups
     Route::get('your-groups', [GroupController::class, 'yourGroups'])->name('groups.your-groups');
 
-    Route::get('/task-statuses', function () {
-        return \App\Models\TaskStatus::all();
-    });
+    Route::get('/task-statuses', [TaskController::class, 'statusesWithTaskCount'])->name('tasks.statuses-with-count');
 });
