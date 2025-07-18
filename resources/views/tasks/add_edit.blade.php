@@ -143,6 +143,23 @@
                                     </span>
                                 @enderror
                             </div>
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <label class="form-label">Repeat</label>
+                                <select name="repeat_type_id" id="repeat_type_id" class="form-select">
+                                    <option value="">No Repeat</option>
+                                    @foreach ($repeatTypes as $repeatType)
+                                        <option value="{{ $repeatType->id }}"
+                                            {{ old('repeat_type_id', $task ? $task->repeat_type_id : null) == $repeatType->id ? 'selected' : '' }}>
+                                            {{ ucfirst($repeatType->name) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('repeat_type_id')
+                                    <span class="text-danger" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
 
                             <div class="col-lg-4 col-md-6 mb-4">
                                 <label class="form-label">Remind me before</label>
@@ -167,7 +184,14 @@
                                         {{ old('reminder_offset', $task && $task->reminder_offset ? $task->reminder_offset : '') == 1440 ? 'selected' : '' }}>
                                         1 day</option>
                                 </select>
+                                @error('reminder_offset')
+                                    <span class="text-danger" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
                             </div>
+
+
 
                             <div class="col-lg-4 mb-4">
                                 <label class="form-label">Reminder Type</label>
@@ -180,22 +204,26 @@
                                     );
                                 @endphp
                                 <div class="form-check">
-                                    <input {{ $canEdit ? '' : 'disabled' }} class="form-check-input" type="checkbox" name="reminder_methods[]" value="web"
+                                    <input {{ $canEdit ? '' : 'disabled' }} class="form-check-input" type="checkbox"
+                                        name="reminder_methods[]" value="web"
                                         {{ in_array('web', $selectedMethods) ? 'checked' : '' }}> Web
                                     Notification
                                 </div>
                                 <div class="form-check">
-                                    <input {{ $canEdit ? '' : 'disabled' }} class="form-check-input" type="checkbox" name="reminder_methods[]" value="email"
+                                    <input {{ $canEdit ? '' : 'disabled' }} class="form-check-input" type="checkbox"
+                                        name="reminder_methods[]" value="email"
                                         {{ in_array('email', $selectedMethods) ? 'checked' : '' }}>
                                     Email
                                 </div>
                                 <div class="form-check">
-                                    <input {{ $canEdit ? '' : 'disabled' }} class="form-check-input" type="checkbox" name="reminder_methods[]" value="sound"
+                                    <input {{ $canEdit ? '' : 'disabled' }} class="form-check-input" type="checkbox"
+                                        name="reminder_methods[]" value="sound"
                                         {{ in_array('sound', $selectedMethods) ? 'checked' : '' }}> Play
                                     Sound
                                 </div>
                                 <div class="form-check">
-                                    <input {{ $canEdit ? '' : 'disabled' }} class="form-check-input" type="checkbox" name="reminder_methods[]" value="tts"
+                                    <input {{ $canEdit ? '' : 'disabled' }} class="form-check-input" type="checkbox"
+                                        name="reminder_methods[]" value="tts"
                                         {{ in_array('tts', $selectedMethods) ? 'checked' : '' }}>
                                     Text-to-Speech
                                 </div>
@@ -209,7 +237,8 @@
                                 <label class="form-label" for="label"> Description <span
                                         class="text-danger">*</span></label>
 
-                                <textarea {{ $canEdit ? '' : 'readonly' }} required class="form-control" id="editor" name="description" placeholder="Enter description">{{ $value }}</textarea>
+                                <textarea {{ $canEdit ? '' : 'readonly' }} required class="form-control" id="editor" name="description"
+                                    placeholder="Enter description">{{ $value }}</textarea>
 
                                 @error('description')
                                     <span class="text-danger" role="alert">
@@ -251,9 +280,9 @@
                                                 value="{{ $id }}">
 
                                             <div class="col-md-8">
-                                                <input type="text" {{ $canEdit ? '' : 'disabled' }} name="sub_tasks[{{ $index }}]"
-                                                    class="form-control" value="{{ $title }}"
-                                                    placeholder="Enter sub task">
+                                                <input type="text" {{ $canEdit ? '' : 'disabled' }}
+                                                    name="sub_tasks[{{ $index }}]" class="form-control"
+                                                    value="{{ $title }}" placeholder="Enter sub task">
                                             </div>
                                             <div class="col-md-2">
                                                 <div class="form-check">
@@ -490,11 +519,7 @@
                 <input type="text" name="sub_tasks[${subTaskIndex}]" class="form-control" placeholder="Enter sub task">
             </div>
             <div class="col-md-2">
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input"
-                        name="completed[]" id="completed_${subTaskIndex}"
-                        value="new_${subTaskIndex}">
-                </div>
+                
             </div>
             <div class="col-md-2">
                 <button type="button" class="btn btn-danger remove-sub-task">×</button>

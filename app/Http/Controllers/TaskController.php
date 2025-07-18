@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\Priority;
+use App\Models\RepeatType;
 use App\Models\Task;
 use App\Models\TaskAttachment;
 use App\Models\TaskStatus;
@@ -22,9 +23,9 @@ class TaskController extends Controller
         $tasks = Task::with(['createdBy', 'assignedTo', 'group'])
             ->where(function ($query) {
                 $query->where('created_by', auth()->id())
-                      ->orWhereHas('assignedUsers', function ($q) {
-                          $q->where('user_id', auth()->id());
-                      });
+                    ->orWhereHas('assignedUsers', function ($q) {
+                        $q->where('user_id', auth()->id());
+                    });
             })
             ->latest()
             ->get();
@@ -33,6 +34,27 @@ class TaskController extends Controller
         $taskStatuses = TaskStatus::all();
 
         return view('tasks.index', compact('tasks', 'priorities', 'taskStatuses'));
+    }
+
+
+    public function dataForCreateEdit()
+    {
+        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
+
+        $users = User::where('id', '!=', auth()->id())
+            ->latest()
+            ->get();
+        $priorities = Priority::all();
+        $taskStatuses = TaskStatus::all();
+        $repeatTypes = RepeatType::all();
+
+        return [
+            'assignableUsers' => $assignableUsers,
+            'users' => $users,
+            'priorities' => $priorities,
+            'taskStatuses' => $taskStatuses,
+            'repeatTypes' => $repeatTypes,
+        ];
     }
 
     /**
@@ -44,25 +66,71 @@ class TaskController extends Controller
     {
         $task = null;
 
-        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
+        $data = $this->dataForCreateEdit();
+        $assignableUsers = $data['assignableUsers'];
+        $users = $data['users'];
+        $priorities = $data['priorities'];
+        $taskStatuses = $data['taskStatuses'];
+        $repeatTypes = $data['repeatTypes'];
+        $canEdit = true; // Always allow creating new tasks
 
-        $users = User::where('id', '!=', auth()->id())
-            ->latest()
-            ->get();
-        $priorities = Priority::all();
-        $taskStatuses = TaskStatus::all();
-
-        $canEdit = true; // Always true for create
-
-        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'canEdit'));
+        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'canEdit', 'repeatTypes'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+    public function show($id)
+    {
+
+        $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
+            ->where(function ($query) {
+                $query->where('created_by', auth()->id())
+                    ->orWhereHas('assignedUsers', function ($q) {
+                        $q->where('user_id', auth()->id());
+                    });
+            })
+            ->findOrFail($id);
+
+        $data = $this->dataForCreateEdit();
+        $assignableUsers = $data['assignableUsers'];
+        $users = $data['users'];
+        $priorities = $data['priorities'];
+        $taskStatuses = $data['taskStatuses'];
+        $repeatTypes = $data['repeatTypes'];
+
+        $subTasks = $task->subTasks;
+
+        $canEdit = $task->created_by === auth()->id();
+
+        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'subTasks', 'canEdit', 'repeatTypes'));
+    }
+
+    public function edit($id)
+    {
+
+        $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
+            ->where(function ($query) {
+                $query->where('created_by', auth()->id());
+            })
+            ->findOrFail($id);
+
+        $data = $this->dataForCreateEdit();
+        $assignableUsers = $data['assignableUsers'];
+        $users = $data['users'];
+        $priorities = $data['priorities'];
+        $taskStatuses = $data['taskStatuses'];
+        $repeatTypes = $data['repeatTypes'];
+
+        $subTasks = $task->subTasks;
+
+        $canEdit = $task->created_by === auth()->id();
+
+        if (!$canEdit) {
+            abort(403, 'You do not have permission to edit this task.');
+        }
+
+        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'subTasks', 'canEdit', 'repeatTypes'));
+    }
+
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -78,7 +146,8 @@ class TaskController extends Controller
             'assigned_to' => 'nullable',
             'due_datetime' => 'nullable|date',
             'reminder_offset' => 'nullable|integer',
-            'reminder_methods' => 'nullable|array'
+            'reminder_methods' => 'nullable|array',
+            'repeat_type_id' => 'nullable|exists:repeat_types,id'
         ]);
 
 
@@ -106,6 +175,16 @@ class TaskController extends Controller
         $assignedTo = $request->input('assigned_to', []) ?: [auth()->id()];
         $task->assignedUsers()->sync($assignedTo);
 
+
+        if ($request->repeat_type_id) {
+            $repeatType = RepeatType::findOrFail($request->repeat_type_id);
+            $this->updateRepeatType($task, $repeatType);
+        } else {
+            $task->repeat_type_id = null;
+            $task->next_repeat_at = null;
+            $task->save();
+        }
+
         $subTasks = $request->input('sub_tasks', []);
         $completed = $request->input('completed', []); // Contains values like new_0, new_1
 
@@ -126,80 +205,6 @@ class TaskController extends Controller
         return redirect()->route('tasks.index')->withToastSuccess('Task created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-
-        $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
-            ->where(function ($query) {
-                $query->where('created_by', auth()->id())
-                        ->orWhereHas('assignedUsers', function ($q) {
-                            $q->where('user_id', auth()->id());
-                        });
-            })
-            ->findOrFail($id);
-
-        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
-
-
-        $users = User::where('id', '!=', auth()->id())
-            ->latest()
-            ->get();
-        $priorities = Priority::all();
-        $taskStatuses = TaskStatus::all();
-        $subTasks = $task->subTasks;
-
-        $canEdit = $task->created_by === auth()->id();
-
-        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'subTasks', 'canEdit'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-
-        $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
-            ->where(function ($query) {
-                $query->where('created_by', auth()->id());
-            })
-            ->findOrFail($id);
-
-        $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
-
-
-        $users = User::where('id', '!=', auth()->id())
-            ->latest()
-            ->get();
-        $priorities = Priority::all();
-        $taskStatuses = TaskStatus::all();
-        $subTasks = $task->subTasks;
-
-        $canEdit = $task->created_by === auth()->id();
-
-        if(!$canEdit) {
-            abort(403, 'You do not have permission to edit this task.');
-        }
-
-        return view('tasks.add_edit', compact('task', 'assignableUsers', 'users', 'priorities', 'taskStatuses', 'subTasks', 'canEdit'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, Task $task)
     {
         $validated = $request->validate([
@@ -215,6 +220,7 @@ class TaskController extends Controller
             'reminder_offset' => 'nullable|integer',
             'reminder_methods' => 'nullable|array',
             'due_datetime' => 'nullable|date',
+            'repeat_type_id' => 'nullable|exists:repeat_types,id',
         ]);
 
         $assignableUsers = auth()->user()->groups->flatMap->groupMembers->unique('id');
@@ -224,8 +230,6 @@ class TaskController extends Controller
                 abort(403, 'User not in your group');
             }
         }
-
-
 
         $task->update([
             'title' => $validated['title'],
@@ -237,6 +241,16 @@ class TaskController extends Controller
             'reminder_offset' => $request->reminder_offset,
             'reminder_methods' => $request->reminder_methods ? json_encode($request->reminder_methods) : null,
         ]);
+
+        if ($request->repeat_type_id) {
+            $repeatType = RepeatType::findOrFail($request->repeat_type_id);
+            $this->updateRepeatType($task, $repeatType);
+        } else {
+            $task->repeat_type_id = null;
+            $task->next_repeat_at = null;
+            $task->save();
+        }
+
         $assignedTo = $request->input('assigned_to', []) ?: [auth()->id()];
         $task->assignedUsers()->sync($assignedTo);
 
@@ -348,5 +362,13 @@ class TaskController extends Controller
                 }
             }
         }
+    }
+
+    public function updateRepeatType(Task $task, RepeatType $repeatType)
+    {
+        $task->repeat_type_id = $repeatType->id;
+        // interval is like: 1 day, 7 days, 1 month, 1 year
+        $task->next_repeat_at = now()->add($repeatType->interval);
+        $task->save();
     }
 }

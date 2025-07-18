@@ -51,4 +51,9 @@ class Task extends Model
     {
         return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id');
     }
+
+    public function repeatType()
+    {
+        return $this->belongsTo(RepeatType::class, 'repeat_type_id')->withDefault();
+    }
 }
