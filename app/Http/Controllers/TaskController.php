@@ -20,7 +20,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::with(['createdBy', 'assignedTo', 'group'])
+        $tasks = Task::with(['createdBy', 'group'])
             ->where(function ($query) {
                 $query->where('created_by', auth()->id())
                     ->orWhereHas('assignedUsers', function ($q) {
@@ -80,7 +80,7 @@ class TaskController extends Controller
     public function show($id)
     {
 
-        $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
+        $task = Task::with(['createdBy', 'group', 'priority', 'status'])
             ->where(function ($query) {
                 $query->where('created_by', auth()->id())
                     ->orWhereHas('assignedUsers', function ($q) {
@@ -106,7 +106,7 @@ class TaskController extends Controller
     public function edit($id)
     {
 
-        $task = Task::with(['createdBy', 'assignedTo', 'group', 'priority', 'status'])
+        $task = Task::with(['createdBy', 'group', 'priority', 'status'])
             ->where(function ($query) {
                 $query->where('created_by', auth()->id());
             })
@@ -320,11 +320,15 @@ class TaskController extends Controller
     {
         $task = Task::where(function ($query) {
             $query->where('created_by', auth()->id());
-        })->findOrFail($id);
+        })
+        ->where('id',(int)$id)
+        ->first();
 
         $task->delete();
 
-        return redirect()->route('tasks.index')->withToastSuccess('Task deleted successfully.');
+        return response()->json([
+            'message' => 'Task deleted successfully.'
+        ]);
     }
 
     public function updatePriority(Request $request, Task $task)
@@ -370,5 +374,54 @@ class TaskController extends Controller
         // interval is like: 1 day, 7 days, 1 month, 1 year
         $task->next_repeat_at = now()->add($repeatType->interval);
         $task->save();
+    }
+
+
+    public function getTasks(Request $request)
+    {
+        $statusId = $request->input('status_id', null);
+
+        $query = Task::with(['createdBy', 'group'])
+            ->where(function ($query) {
+                $query->where('created_by', auth()->id())
+                    ->orWhereHas('assignedUsers', function ($q) {
+                        $q->where('user_id', auth()->id());
+                    });
+            });
+
+        if ($statusId) {
+            $query->where('task_status_id', $statusId);
+        }
+
+        $tasks = $query->get();
+
+        $tasks = $tasks->map(function ($task) {
+            // get assignees as an array
+            $assignies = $task->assignedUsers->map(function ($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                ];
+            })->toArray();
+
+            return [
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'created_by' => $task->createdBy ? $task->createdBy->name : 'N/A',
+                'assignies' => $assignies,
+                'priority' => $task->priority ? $task->priority->name : 'N/A',
+                'status' => $task->status ? $task->status->name : 'N/A',
+                'due_datetime' => $task->due_datetime,
+                'created_at' => $task->created_at->format('Y-m-d H:i:s'),
+                'can_edit' => $task->created_by === auth()->id(),
+                'can_view' => $task->created_by === auth()->id() || $task->assignedUsers->contains(auth()->id()),
+                'can_delete' => $task->created_by === auth()->id(),
+            ];
+        });
+
+        return response()->json([
+            'tasks' => $tasks
+        ]);
     }
 }

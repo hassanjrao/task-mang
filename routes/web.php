@@ -28,12 +28,13 @@ Route::middleware(["auth"])->group(function () {
         return view('dashboard');
     })->name('dashboard.index');
 
-      Route::match(['get'], '/', function () {
+    Route::match(['get'], '/', function () {
         return view('dashboard');
     })->name('dashboard.index');
 
     Route::resource('profile', ProfileController::class)->only(['index', 'update']);
 
+    Route::get('get-tasks',[TaskController::class, 'getTasks'])->name('tasks.get-tasks');
     Route::resource('tasks', TaskController::class);
     Route::put('tasks/{task}/update-priority', [TaskController::class, 'updatePriority'])->name('tasks.update-priority');
     Route::put('tasks/{task}/update-status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
@@ -47,4 +48,8 @@ Route::middleware(["auth"])->group(function () {
     Route::post('groups/{group}/leave', [GroupController::class, 'leave'])->name('groups.leave');
     // your groups
     Route::get('your-groups', [GroupController::class, 'yourGroups'])->name('groups.your-groups');
+
+    Route::get('/task-statuses', function () {
+        return \App\Models\TaskStatus::all();
+    });
 });

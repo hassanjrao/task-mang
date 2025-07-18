@@ -17,11 +17,6 @@ class Task extends Model
         return $this->belongsTo(User::class, 'created_by')->withDefault();
     }
 
-    public function assignedTo()
-    {
-        return $this->belongsTo(User::class, 'assigned_to')->withDefault();
-    }
-
     public function group()
     {
         return $this->belongsTo(Group::class, 'group_id')->withDefault();
