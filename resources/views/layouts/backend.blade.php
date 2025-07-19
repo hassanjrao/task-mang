@@ -368,6 +368,14 @@
                 notifyTaskReminder(e.task);
             });
 
+        Echo.private(`App.Models.User.${userId}`)
+            .notification((notification) => {
+                console.log('Notification received:', notification);
+
+               notifyTaskReminder(notification.data.task);
+            });
+
+
         function notifyTaskReminder(task) {
 
             console.log('notifications:', task.id);
@@ -375,7 +383,7 @@
                 console.log('browser notification');
                 new Notification(task.title, {
                     body: task.title,
-                    requireInteraction:true
+                    requireInteraction: true
                 });
             }
 

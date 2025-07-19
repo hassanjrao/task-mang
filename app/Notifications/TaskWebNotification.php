@@ -34,7 +34,7 @@ class TaskWebNotification extends Notification
     {
         return [
             'title' => 'Reminder: ' . $this->task->title,
-            'message' => 'This task is due soon: ' . $this->task->description,
+            'message' => 'This task is due soon: ' . $this->task->title,
             'task_id' => $this->task->id,
         ];
     }
@@ -43,7 +43,7 @@ class TaskWebNotification extends Notification
     {
         return new BroadcastMessage([
             'title' => 'Reminder: ' . $this->task->title,
-            'message' => 'This task is due soon: ' . $this->task->description,
+            'message' => 'This task is due soon: ' . $this->task->title,
             'task_id' => $this->task->id,
         ]);
     }
