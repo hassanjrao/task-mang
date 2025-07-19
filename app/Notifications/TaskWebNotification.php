@@ -27,14 +27,14 @@ class TaskWebNotification extends Notification
      */
     public function via($notifiable)
     {
-        return ['database', 'broadcast']; // for web UI
+        return ['broadcast']; // for web UI
     }
 
     public function toDatabase($notifiable)
     {
         return [
             'title' => 'Reminder: ' . $this->task->title,
-            'message' => 'This task is due soon: ' . $this->task->title,
+            'message' => 'task is due soon: ' . $this->task->title,
             'task_id' => $this->task->id,
         ];
     }
@@ -43,7 +43,7 @@ class TaskWebNotification extends Notification
     {
         return new BroadcastMessage([
             'title' => 'Reminder: ' . $this->task->title,
-            'message' => 'This task is due soon: ' . $this->task->title,
+            'message' => 'The task ' . $this->task->title .' is due soon.',
             'task_id' => $this->task->id,
         ]);
     }

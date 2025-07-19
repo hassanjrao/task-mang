@@ -367,26 +367,24 @@
         console.log('userId:', `App.Models.User.${userId}`);
         Echo.private(`App.Models.User.${userId}`)
             .notification((notification) => {
-                console.log('Received:', notification);
+                notifyTaskReminder(notification);
             });
 
 
 
         function notifyTaskReminder(task) {
 
-            console.log('notifications:', task.id);
+            console.log('notifications:', task.task_id);
             if (Notification.permission === 'granted') {
                 console.log('browser notification');
                 new Notification(task.title, {
-                    body: task.title,
-                    requireInteraction: true
+                    body: task.message,
                 });
             }
 
             if (task.reminder_methods.includes('tts')) {
                 const speak = () => {
-                    console.log('Speaking reminder:', task.id);
-                    const msg = new SpeechSynthesisUtterance(task.title);
+                    const msg = new SpeechSynthesisUtterance(task.message);
                     window.speechSynthesis.speak(msg);
                 };
 
