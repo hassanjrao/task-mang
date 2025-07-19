@@ -373,6 +373,7 @@
                 console.log('browser notification');
                 new Notification(task.title, {
                     body: task.title + ' is due now.',
+                    requireInteraction:true
                 });
             }
 
