@@ -4,6 +4,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskAttachmentsController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -58,4 +59,7 @@ Route::middleware(["auth"])->group(function () {
     Route::get('your-groups', [GroupController::class, 'yourGroups'])->name('groups.your-groups');
 
     Route::get('/task-statuses', [TaskController::class, 'statusesWithTaskCount'])->name('tasks.statuses-with-count');
+
+    Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
+
 });

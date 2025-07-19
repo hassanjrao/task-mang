@@ -42,6 +42,8 @@ class GroupController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'members'=>'nullable|array',
+            'members.*' => 'exists:users,id',
         ]);
 
         $group= Group::create([
@@ -50,8 +52,10 @@ class GroupController extends Controller
             'created_by' => auth()->id(),
         ]);
 
-        // Automatically join the creator to the group
-        $group->groupMembers()->attach(auth()->id());
+        $members=$request->input('members', []);
+        // merge creator to members
+        $members[] = auth()->id();
+        $group->groupMembers()->sync($members);
 
         return redirect()->route('groups.index')->withToastSuccess('Group created successfully.');
     }

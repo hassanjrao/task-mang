@@ -9,7 +9,7 @@
 
 @section('content')
     <!-- Page Content -->
-      <div id="vue-app">
+    <div id="vue-app">
         <task-listing />
     </div>
     <!-- END Page Content -->

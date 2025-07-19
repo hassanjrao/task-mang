@@ -17,6 +17,8 @@
 
     <!-- Fonts and Styles -->
     @yield('css_before')
+
+    <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" id="css-main" href="{{ asset('css/oneui.css') }}">
     <link rel="icon" href="{{ asset('media/fav.png') }}" type="image/gif" sizes="16x16">
@@ -151,13 +153,13 @@
                                 <span class="nav-main-link-name">Groups</span>
                             </a>
                         </li>
-                        <li class="nav-main-item">
+                        {{-- <li class="nav-main-item">
                             <a class="nav-main-link{{ request()->is('your-groups*') ? ' active' : '' }}"
                                 href="{{ route('groups.your-groups') }}">
                                 <i class="nav-main-link-icon si si-cursor"></i>
                                 <span class="nav-main-link-name">Your Groups</span>
                             </a>
-                        </li>
+                        </li> --}}
 
                     </ul>
                 </div>
@@ -327,7 +329,7 @@
 
     <!-- Page JS Helpers (Flatpickr + BS Datepicker + BS Maxlength + Select2 + Masked Inputs + Ion Range Slider + BS Colorpicker plugins) -->
     <script>
-        // One.helpersOnLoad(['jq-select2']);
+        One.helpersOnLoad(['jq-select2']);
     </script>
 
 
