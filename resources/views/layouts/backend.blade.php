@@ -369,17 +369,19 @@
             });
 
         function notifyTaskReminder(task) {
+
+            console.log('notifications:', task.id);
             if (Notification.permission === 'granted') {
                 console.log('browser notification');
                 new Notification(task.title, {
-                    body: task.title + ' is due now.',
+                    body: task.title,
                     requireInteraction:true
                 });
             }
 
             if (task.reminder_methods.includes('tts')) {
                 const speak = () => {
-                    console.log('Speaking reminder:', task.title, task.description);
+                    console.log('Speaking reminder:', task.title, task.descriptio);
                     const msg = new SpeechSynthesisUtterance(task.title);
                     window.speechSynthesis.speak(msg);
                 };
@@ -392,7 +394,6 @@
             }
 
             if (task.reminder_methods.includes('sound')) {
-                console.log('Playing sound reminder');
                 new Audio('/audio/error-bell.wav').play();
             }
         }
