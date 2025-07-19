@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Task;
 use App\Notifications\TaskReminderEmailNotification;
+use App\Notifications\TaskWebNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -45,10 +46,6 @@ class SendTaskReminderJob implements ShouldQueue
             if (in_array('email', $methods)) {
                 $user->notify(new TaskReminderEmailNotification($this->task));
             }
-
-            if (in_array('web', $methods)) {
-                // $user->notify(new TaskWebNotification($this->task));
-            }
         }
 
         // Notify creator if not already in assigned users
@@ -58,7 +55,7 @@ class SendTaskReminderJob implements ShouldQueue
             }
 
             if (in_array('web', $methods)) {
-                // $this->task->createdBy->notify(new TaskWebNotification($this->task));
+                $this->task->createdBy->notify(new TaskWebNotification($this->task));
             }
         }
     }
