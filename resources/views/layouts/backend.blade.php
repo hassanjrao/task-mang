@@ -372,14 +372,14 @@
             if (Notification.permission === 'granted') {
                 console.log('browser notification');
                 new Notification(task.title, {
-                    body: task.description
+                    body: task.title + ' is due now.',
                 });
             }
 
             if (task.reminder_methods.includes('tts')) {
                 const speak = () => {
                     console.log('Speaking reminder:', task.title, task.description);
-                    const msg = new SpeechSynthesisUtterance('Meeting with client Hassan. Reminder: Your Zoom meeting starts in 10 minutes.');
+                    const msg = new SpeechSynthesisUtterance(task.title);
                     window.speechSynthesis.speak(msg);
                 };
 
