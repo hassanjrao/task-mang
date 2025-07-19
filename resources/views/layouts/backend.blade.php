@@ -405,13 +405,15 @@
         if (Notification.permission !== 'granted') {
             Notification.requestPermission().then(permission => {
                 if (permission === 'granted') {
-                    // triggerTestNotification();
+
                     console.log('Notification permission granted');
+                    triggerTestNotification();
                 }
             });
         } else {
-            // triggerTestNotification();
+
             console.log('Notification permission already granted');
+            triggerTestNotification();
         }
     </script>
 
