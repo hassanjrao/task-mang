@@ -20,6 +20,14 @@ use Illuminate\Support\Facades\Route;
 
 Auth::routes();
 
+// get log files appear
+Route::get('/logs', function () {
+    $logFiles = glob(storage_path('logs/*.log'));
+    $logFiles = array_map(function ($file) {
+        return basename($file);
+    }, $logFiles);
+    var_dump($logFiles);
+})->name('logs.index');
 
 
 Route::middleware(["auth"])->group(function () {
