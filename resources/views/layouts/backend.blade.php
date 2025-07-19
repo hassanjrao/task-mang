@@ -363,15 +363,12 @@
     </script>
 
     <script>
-        Echo.channel('task-reminders')
-            .listen('.TaskDue', (e) => {
-                notifyTaskReminder(e.task);
-            });
         let userId = @json(auth()->id());
         console.log('userId:', userId);
         Echo.private(`App.Models.User.${userId}`)
             .listen('.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', (e) => {
-                console.log('Event received:', e);
+                console.log('Raw broadcast received:', e);
+                //    notifyTaskReminder(notification.data.task);/
             });
 
 
