@@ -390,6 +390,7 @@
             }
 
             if (task.reminder_methods.includes('sound')) {
+                console.log('Playing sound reminder');
                 new Audio('/audio/error-bell.wav').play();
             }
         }
@@ -408,13 +409,13 @@
                 if (permission === 'granted') {
 
                     console.log('Notification permission granted');
-                    triggerTestNotification();
+                    // triggerTestNotification();
                 }
             });
         } else {
 
             console.log('Notification permission already granted');
-            triggerTestNotification();
+            // triggerTestNotification();
         }
     </script>
 
