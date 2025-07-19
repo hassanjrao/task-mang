@@ -370,6 +370,7 @@
 
         function notifyTaskReminder(task) {
             if (Notification.permission === 'granted') {
+                console.log('browser notification');
                 new Notification(task.title, {
                     body: task.description
                 });
@@ -395,27 +396,14 @@
             }
         }
 
-        function triggerTestNotification() {
-            const task = {
-                title: 'Meeting with client',
-                description: 'Reminder: Your Zoom meeting starts in 10 minutes.',
-                reminder_methods: ['sound']
-            };
-            notifyTaskReminder(task);
-        }
-
         if (Notification.permission !== 'granted') {
             Notification.requestPermission().then(permission => {
                 if (permission === 'granted') {
-
                     console.log('Notification permission granted');
-                    // triggerTestNotification();
                 }
             });
         } else {
-
             console.log('Notification permission already granted');
-            // triggerTestNotification();
         }
     </script>
 
