@@ -363,14 +363,13 @@
     </script>
 
     <script>
-
         let userId = @json(auth()->id());
         console.log('userId:', `App.Models.User.${userId}`);
         Echo.private(`App.Models.User.${userId}`)
-             .listen('.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', (e) => {
-        console.log('Raw broadcast received:', e);
-            //    notifyTaskReminder(notification.data.task);/
+            .notification((notification) => {
+                console.log('Received:', notification);
             });
+
 
 
         function notifyTaskReminder(task) {

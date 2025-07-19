@@ -39,6 +39,9 @@ return [
                 'cluster' => env('PUSHER_APP_CLUSTER'),
                 'useTLS' => true,
             ],
+            'auth' => [
+                'guard' => 'web', // <== Is this correct for your app?
+            ],
         ],
 
         'redis' => [
