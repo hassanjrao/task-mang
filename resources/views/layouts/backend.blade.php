@@ -377,7 +377,8 @@
 
             if (task.reminder_methods.includes('tts')) {
                 const speak = () => {
-                    const msg = new SpeechSynthesisUtterance('Meeting with client. Reminder: Your Zoom meeting starts in 10 minutes.');
+                    console.log('Speaking reminder:', task.title, task.description);
+                    const msg = new SpeechSynthesisUtterance('Meeting with client Hassan. Reminder: Your Zoom meeting starts in 10 minutes.');
                     window.speechSynthesis.speak(msg);
                 };
 
