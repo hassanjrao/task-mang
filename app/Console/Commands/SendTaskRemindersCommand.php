@@ -43,7 +43,7 @@ class SendTaskRemindersCommand extends Command
     {
         $now = Carbon::now();
 
-        $task=Task::first();
+        $task=Task::find(13);
         broadcast(new TaskReminderEvent($task));
         dispatch(new SendTaskReminderJob($task));
 
