@@ -47,9 +47,9 @@ class SendTaskReminderJob implements ShouldQueue
                 $user->notify(new TaskReminderEmailNotification($this->task));
             }
 
-            if (in_array('web', $methods)) {
-                $this->task->createdBy->notify(new TaskWebNotification($this->task));
-            }
+            // if (in_array('web', $methods)) {
+                $user->notify(new TaskWebNotification($this->task));
+            // }
         }
 
         // Notify creator if not already in assigned users
