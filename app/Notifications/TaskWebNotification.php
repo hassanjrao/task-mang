@@ -45,6 +45,7 @@ class TaskWebNotification extends Notification
             'title' => 'Reminder: ' . $this->task->title,
             'message' => 'The task ' . $this->task->title .' is due soon.',
             'task_id' => $this->task->id,
+            'reminder_methods'=> json_decode($this->task->reminder_methods ?? '[]'),
         ]);
     }
 }
