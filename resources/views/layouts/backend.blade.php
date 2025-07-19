@@ -372,7 +372,7 @@
             .notification((notification) => {
                 console.log('Notification received:', notification);
 
-               notifyTaskReminder(notification.data.task);
+            //    notifyTaskReminder(notification.data.task);/
             });
 
 
