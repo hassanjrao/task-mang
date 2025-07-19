@@ -367,7 +367,7 @@
             .listen('.TaskDue', (e) => {
                 notifyTaskReminder(e.task);
             });
-
+        let userId = {{ auth()->id() }};
         Echo.private(`App.Models.User.${userId}`)
             .notification((notification) => {
                 console.log('Notification received:', notification);
