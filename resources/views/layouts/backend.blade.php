@@ -28,7 +28,7 @@
 
 
     <!-- You can include a specific file from public/css/themes/ folder to alter the default color theme of the template. eg: -->
-    <!-- <link rel="stylesheet" id="css-theme" href="{{ asset('css/themes/amethyst.css') }}"> -->
+    {{-- <link rel="stylesheet" id="css-theme" href="{{ asset('css/themes/amethyst.css') }}">  --}}
     <style>
         .v-application {
             background-color: transparent !important;
