@@ -370,10 +370,8 @@
         let userId = @json(auth()->id());
         console.log('userId:', userId);
         Echo.private(`App.Models.User.${userId}`)
-            .notification((notification) => {
-                console.log('Notification received:', notification);
-
-            //    notifyTaskReminder(notification.data.task);/
+            .listen('.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', (e) => {
+                console.log('Event received:', e);
             });
 
 
