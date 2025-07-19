@@ -46,17 +46,21 @@ class SendTaskReminderJob implements ShouldQueue
             if (in_array('email', $methods)) {
                 $user->notify(new TaskReminderEmailNotification($this->task));
             }
-        }
-
-        // Notify creator if not already in assigned users
-        if (!in_array($this->task->created_by, $notifiedUserIds)) {
-            if (in_array('email', $methods)) {
-                $this->task->createdBy->notify(new TaskReminderEmailNotification($this->task));
-            }
 
             if (in_array('web', $methods)) {
                 $this->task->createdBy->notify(new TaskWebNotification($this->task));
             }
         }
+
+        // Notify creator if not already in assigned users
+        // if (!in_array($this->task->created_by, $notifiedUserIds)) {
+        //     if (in_array('email', $methods)) {
+        //         $this->task->createdBy->notify(new TaskReminderEmailNotification($this->task));
+        //     }
+
+        //     if (in_array('web', $methods)) {
+        //         $this->task->createdBy->notify(new TaskWebNotification($this->task));
+        //     }
+        // }
     }
 }

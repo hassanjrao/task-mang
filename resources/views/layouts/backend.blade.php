@@ -369,11 +369,7 @@
             });
         let userId = {{ auth()->id() }};
         Echo.private(`App.Models.User.${userId}`)
-            .notification((notification) => {
-                console.log('Notification received:', notification);
-
-               notifyTaskReminder(notification.data.task);
-            });
+        .
 
 
         function notifyTaskReminder(task) {
