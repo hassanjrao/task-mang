@@ -381,7 +381,7 @@
 
             if (task.reminder_methods.includes('tts')) {
                 const speak = () => {
-                    console.log('Speaking reminder:', task.title, task.descriptio);
+                    console.log('Speaking reminder:', task.id);
                     const msg = new SpeechSynthesisUtterance(task.title);
                     window.speechSynthesis.speak(msg);
                 };
