@@ -47,9 +47,11 @@ class SendTaskReminderJob implements ShouldQueue
                 $user->notify(new TaskReminderEmailNotification($this->task));
             }
 
-            // if (in_array('web', $methods)) {
+            // if methods contain web, sound, or tts
+            // we will send web notification
+            if (in_array('web', $methods) || in_array('sound', $methods) || in_array('tts', $methods)) {
                 $user->notify(new TaskWebNotification($this->task));
-            // }
+            }
         }
 
         // Notify creator if not already in assigned users
