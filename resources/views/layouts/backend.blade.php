@@ -20,12 +20,12 @@
 
     <link rel="stylesheet" href="{{ asset('js/plugins/select2/css/select2.min.css') }}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
-    <link rel="stylesheet" id="css-main" href="{{ asset('css/oneui.css') }}">
     <link rel="icon" href="{{ asset('media/fav.png') }}" type="image/gif" sizes="16x16">
 
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-bs5/dataTables.bootstrap5.min.css') }}">
     <link rel="stylesheet" href="{{ asset('js/plugins/datatables-buttons-bs5/buttons.bootstrap5.min.css') }}">
 
+    <link rel="stylesheet" id="css-main" href="{{ asset('css/oneui.css') }}">
 
     <!-- You can include a specific file from public/css/themes/ folder to alter the default color theme of the template. eg: -->
     {{-- <link rel="stylesheet" id="css-theme" href="{{ asset('css/themes/amethyst.css') }}">  --}}
@@ -33,6 +33,15 @@
         .v-application {
             background-color: transparent !important;
             font-family: inherit;
+        }
+
+        .swal2-confirm {
+            color: white !important;
+            /* or any other color */
+        }
+
+        .swal2-cancel {
+            color: white !important;
         }
     </style>
     @yield('css_after')
@@ -412,6 +421,34 @@
             console.log('Notification permission already granted');
         }
     </script>
+
+    @if (session('pending_invite_group'))
+        @php
+            $invite = session('pending_invite_group');
+        @endphp
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    title: 'Group Invitation',
+                    text: "You've been invited to join '{{ $invite->group->name }}'. Do you accept?",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Accept',
+                    cancelButtonText: 'Decline',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href =
+                            "{{ route('group.invitation.respond', ['id' => $invite->id, 'action' => 'accept']) }}";
+                    } else if (result.dismiss === Swal.DismissReason.cancel) {
+                        window.location.href =
+                            "{{ route('group.invitation.respond', ['id' => $invite->id, 'action' => 'decline']) }}";
+                    }
+                });
+            });
+        </script>
+    @endif
 
 
 

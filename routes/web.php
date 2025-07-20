@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\GroupInvitationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskAttachmentsController;
 use App\Http\Controllers\TaskController;
@@ -31,7 +32,7 @@ Route::get('/logs', function () {
 })->name('logs.index');
 
 
-Route::middleware(["auth"])->group(function () {
+Route::middleware(["auth",'check.group.invites'])->group(function () {
 
     Route::match(['get', 'post'], '/dashboard', function () {
         return view('dashboard');
@@ -61,5 +62,8 @@ Route::middleware(["auth"])->group(function () {
     Route::get('/task-statuses', [TaskController::class, 'statusesWithTaskCount'])->name('tasks.statuses-with-count');
 
     Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
+
+    Route::get('/group-invitation/{id}/{action}', [GroupInvitationController::class, 'respond'])->name('group.invitation.respond');
+
 
 });

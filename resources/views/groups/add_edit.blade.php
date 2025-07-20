@@ -73,23 +73,41 @@
 
 
                                 {{-- Existing Members --}}
-                                @if ($group && $group->groupMembers->count())
+                                {{-- Existing Members --}}
+                                @if ($group && ($group->groupMembers->count() || $group->groupInvitations->count()))
                                     <div class="col-lg-6 col-md-6 col-sm-12 mb-4">
-                                        <label class="form-label">Current Members</label>
+                                        <label class="form-label">Group Users</label>
                                         <ul class="list-group">
+                                            {{-- Accepted Members --}}
                                             @foreach ($group->groupMembers as $user)
                                                 <li
                                                     class="list-group-item d-flex justify-content-between align-items-center">
                                                     {{ $user->name }} ({{ $user->email }})
-                                                    <span
-                                                        class="badge bg-{{ $user->pivot->status === 'accepted' ? 'success' : 'warning' }}">
-                                                        {{ ucfirst($user->pivot->status) }}
-                                                    </span>
+                                                    @if ($user->id === $group->created_by)
+                                                        <span class="badge bg-primary">Founder</span>
+                                                    @else
+                                                        <span class="badge bg-success">Accepted</span>
+                                                    @endif
                                                 </li>
+                                            @endforeach
+
+                                            {{-- Pending/Declined Invitations --}}
+                                            @foreach ($group->groupInvitations as $invitation)
+                                                @if (!$group->groupMembers->contains('id', $invitation->user_id))
+                                                    <li
+                                                        class="list-group-item d-flex justify-content-between align-items-center">
+                                                        {{ $invitation->user->name }} ({{ $invitation->user->email }})
+                                                        <span
+                                                            class="badge bg-{{ $invitation->status === 'declined' ? 'danger' : 'warning' }}">
+                                                            {{ ucfirst($invitation->status) }}
+                                                        </span>
+                                                    </li>
+                                                @endif
                                             @endforeach
                                         </ul>
                                     </div>
                                 @endif
+
 
                                 <div class="col-lg-12 text-end">
                                     <button type="submit" form="groupForm" id="submitBtn"

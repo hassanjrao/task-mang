@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
+use App\Models\GroupInvitation;
 use Illuminate\Http\Request;
 
 class GroupController extends Controller
@@ -14,7 +15,9 @@ class GroupController extends Controller
      */
     public function index()
     {
-        $groups= Group::latest()->get();
+        $groups = Group::latest()
+        ->with(['groupMembers', 'groupInvitations.user'])
+        ->get();
 
         return view('groups.index', compact('groups'));
     }
@@ -26,7 +29,7 @@ class GroupController extends Controller
      */
     public function create()
     {
-        $group=null;
+        $group = null;
 
         return view('groups.add_edit', compact('group'));
     }
@@ -42,20 +45,22 @@ class GroupController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'members'=>'nullable|array',
+            'members' => 'nullable|array',
             'members.*' => 'exists:users,id',
         ]);
 
-        $group= Group::create([
+        $group = Group::create([
             'name' => $request->input('name'),
             'description' => $request->input('description'),
             'created_by' => auth()->id(),
         ]);
 
-        $members=$request->input('members', []);
         // merge creator to members
         $members[] = auth()->id();
         $group->groupMembers()->sync($members);
+
+        // send invitations to other members if provided
+        $this->sendInvitations($request->input('members', []), $group);
 
         return redirect()->route('groups.index')->withToastSuccess('Group created successfully.');
     }
@@ -100,6 +105,8 @@ class GroupController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
+            'members' => 'nullable|array',
+            'members.*' => 'exists:users,id',
         ]);
 
         $group = Group::findOrFail($id);
@@ -112,6 +119,10 @@ class GroupController extends Controller
             'name' => $request->input('name'),
             'description' => $request->input('description'),
         ]);
+
+        // Handle invitations for new members
+        $this->sendInvitations($request->input('members', []), $group);
+
 
         return redirect()->route('groups.index')->withToastSuccess('Group updated successfully.');
     }
@@ -162,5 +173,19 @@ class GroupController extends Controller
         })->latest()->get();
 
         return view('groups.your_groups', compact('groups'));
+    }
+
+    public function sendInvitations(array $userIds, Group $group)
+    {
+        foreach ($userIds as $userId) {
+            // Ensure the user is not already a member of the group
+            if ($group->groupMembers()->where('user_id', $userId)->exists()) {
+                continue;
+            }
+            GroupInvitation::firstOrCreate([
+                'group_id' => $group->id,
+                'user_id' => $userId
+            ]);
+        }
     }
 }
