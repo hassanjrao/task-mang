@@ -397,7 +397,7 @@ class TaskController extends Controller
             $query->where('task_status_id', $statusId);
         }
 
-        $tasks = $query->get();
+        $tasks = $query->latest()->get();
 
         $tasks = $tasks->map(function ($task) {
             // get assignees as an array

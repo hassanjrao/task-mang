@@ -3,6 +3,10 @@
 @php
     $addEdit = isset($task) ? 'Edit' : 'Add';
     $addUpdate = isset($task) ? 'Update' : 'Add';
+    if(!$canEdit) {
+        $addEdit = '';
+        $addUpdate = '';
+    }
 @endphp
 
 @section('page-name', $addEdit . ' Task ' . ($task ? '#' . $task->title : ''))
@@ -68,7 +72,7 @@
                             <div class="col-lg-4 col-md-4 col-sm-12 mb-4">
 
                                 <label class="form-label">Assignies <span class="text-danger"></span></label>
-                                <select name="assigned_to[]" class="form-control" multiple {{ $canEdit ? '' : 'readonly' }}>
+                                <select name="assigned_to[]" class="js-select2 form-select" multiple {{ $canEdit ? '' : 'disabled' }}>
                                     @foreach ($assignableUsers as $user)
                                         <option value="{{ $user->id }}"
                                             {{ isset($task) && $task->assignedUsers->contains($user->id) ? 'selected' : '' }}>
@@ -297,7 +301,7 @@
                                             @if ($canEdit)
                                                 <div class="col-md-2">
                                                     <button type="button"
-                                                        class="btn btn-danger remove-sub-task">×</button>
+                                                        class="btn btn-danger remove-sub-task text-white">×</button>
                                                 </div>
                                             @endif
                                         </div>
@@ -305,7 +309,7 @@
                                 </div>
 
                                 @if ($canEdit)
-                                    <button type="button" class="btn btn-sm btn-secondary" id="addSubTaskBtn">+ Add Sub
+                                    <button type="button" class="btn btn-sm btn-secondary text-white" id="addSubTaskBtn">+ Add Sub
                                         Task</button>
                                 @endif
 
@@ -519,10 +523,10 @@
                 <input type="text" name="sub_tasks[${subTaskIndex}]" class="form-control" placeholder="Enter sub task">
             </div>
             <div class="col-md-2">
-                
+
             </div>
             <div class="col-md-2">
-                <button type="button" class="btn btn-danger remove-sub-task">×</button>
+                <button type="button" class="btn btn-danger remove-sub-task text-white">×</button>
             </div>
         `;
             wrapper.appendChild(row);
