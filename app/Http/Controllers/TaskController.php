@@ -451,7 +451,7 @@ class TaskController extends Controller
             ];
         });
 
-        $priorities=Priority::all()->map(function ($priority) {
+        $priorities = Priority::all()->map(function ($priority) {
             return [
                 'id' => $priority->id,
                 'name' => $priority->name,
@@ -463,4 +463,5 @@ class TaskController extends Controller
             'priorities' => $priorities
         ]);
     }
+
 }

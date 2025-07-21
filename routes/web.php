@@ -5,6 +5,7 @@ use App\Http\Controllers\GroupInvitationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskAttachmentsController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TaskExportController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -64,6 +65,9 @@ Route::middleware(["auth",'check.group.invites'])->group(function () {
     Route::get('/users/search', [UserController::class, 'search'])->name('users.search');
 
     Route::get('/group-invitation/{id}/{action}', [GroupInvitationController::class, 'respond'])->name('group.invitation.respond');
+
+
+    Route::get('/tasks/{task}/export', [TaskExportController::class, 'exportSingle'])->name('tasks.export.single');
 
 
 });

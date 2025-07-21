@@ -106,6 +106,16 @@
           >
             <v-icon>mdi-delete</v-icon>
           </v-btn>
+          <v-btn
+            x-small
+            fab
+            dark
+            color="success"
+            v-if="item.can_delete"
+            @click="exportTask(item.id)"
+          >
+            <v-icon>mdi-export</v-icon>
+          </v-btn>
         </template>
       </v-data-table>
     </v-card-text>
@@ -147,7 +157,9 @@ export default {
           this.statuses = res.data.statuses;
           this.priorities = res.data.priorities || [];
           if (this.statuses.length) {
-            this.fetchTasks(this.selectedTab ? this.statuses[this.selectedTab].id : this.statuses[0].id);
+            this.fetchTasks(
+              this.selectedTab ? this.statuses[this.selectedTab].id : this.statuses[0].id
+            );
           }
         })
         .finally(() => {
@@ -222,7 +234,10 @@ export default {
         .finally(() => {
           this.loading = false;
         });
-    }
+    },
+    exportTask(id) {
+      window.open(`/tasks/${id}/export`, "_blank");
+    },
   },
 };
 </script>
