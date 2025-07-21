@@ -24,7 +24,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+         $schedule->command('tasks:mark-overdue')->everyMinute()->withoutOverlapping();
+         $schedule->command('task:repeat')->everyMinute()->withoutOverlapping();
+         $schedule->command('task:send-reminders')->everyMinute()->withoutOverlapping();
     }
 
     /**

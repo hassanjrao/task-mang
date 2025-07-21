@@ -43,20 +43,19 @@ class SendTaskRemindersCommand extends Command
     {
         $now = Carbon::now();
 
-        $task=Task::find(1);
-        // broadcast(new TaskReminderEvent($task));
-        dispatch(new SendTaskReminderJob($task));
+        // $task=Task::find(1);
+        // // broadcast(new TaskReminderEvent($task));
+        // dispatch(new SendTaskReminderJob($task));
 
+        Task::whereNotNull('due_datetime')
+            ->whereNotNull('reminder_offset')
+            ->get()
+            ->each(function ($task) use ($now) {
+                $remindAt = Carbon::parse($task->due_datetime)->subMinutes($task->reminder_offset);
 
-        // Task::whereNotNull('due_datetime')
-        //     ->whereNotNull('reminder_offset')
-        //     ->get()
-        //     ->each(function ($task) use ($now) {
-        //         $remindAt = Carbon::parse($task->due_datetime)->subMinutes($task->reminder_offset);
-
-        //         if ($remindAt->format('Y-m-d H:i') === $now->format('Y-m-d H:i')) {
-        //             dispatch(new SendTaskReminderJob($task));
-        //         }
-        //     });
+                if ($remindAt->format('Y-m-d H:i') === $now->format('Y-m-d H:i')) {
+                    dispatch(new SendTaskReminderJob($task));
+                }
+            });
     }
 }
