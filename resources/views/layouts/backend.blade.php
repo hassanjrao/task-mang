@@ -207,6 +207,14 @@
 
                 <!-- Right Section -->
                 <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <a class="btn btn-alt-secondary btn-sm" href="{{ route('tasks.index') }}">
+                            <span class="fs-sm fw-medium">All Tasks</span>
+                        </a>
+                        <a class="btn btn-alt-primary btn-sm ms-2" href="{{ route('tasks.create') }}">
+                            <span class="fs-sm fw-medium">Add Task</span>
+                        </a>
+                    </div>
                     <!-- User Dropdown -->
                     <div class="dropdown d-inline-block ms-2">
                         <button type="button" class="btn btn-sm btn-alt-secondary d-flex align-items-center"
