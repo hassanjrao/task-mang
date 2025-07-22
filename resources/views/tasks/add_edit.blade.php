@@ -170,7 +170,7 @@
                                 <select name="reminder_offset" class="form-select" {{ $canEdit ? '' : 'disabled' }}>
                                     <option value="">No Reminder</option>
                                     <option value="0"
-                                        {{ old('reminder_offset', $task && $task->reminder_offset ? $task->reminder_offset : '') == 0 ? 'selected' : '' }}>
+                                        {{ old('reminder_offset', $task && $task->reminder_offset==0 ? $task->reminder_offset : '') == 0 ? 'selected' : '' }}>
                                         On
                                         Time</option>
                                     <option value="5"
