@@ -1,12 +1,60 @@
 <template>
   <v-app>
-    <!-- header -->
     <v-card-title>
       <!-- add button on the right -->
       <v-spacer></v-spacer>
       <v-btn color="primary" @click="createTask">Add Task </v-btn>
     </v-card-title>
     <v-card-text>
+      <v-sheet elevation="1" class="pa-4 mb-4" color="white" rounded>
+        <v-row dense>
+          <!-- Assignee Filter -->
+          <v-col cols="12" md="4">
+            <v-autocomplete
+              v-model="filters.assignees"
+              :items="allAssignees"
+              item-value="id"
+              item-text="name"
+              label="Assignees"
+              multiple
+              chips
+              dense
+              clearable
+              hide-details
+              class="custom-input"
+              @change="applyFilters"
+            />
+          </v-col>
+          <!-- Group Filter -->
+          <!-- <v-col cols="12" md="4">
+            <v-autocomplete
+              v-model="filters.groups"
+              :items="allGroups"
+              item-value="id"
+              item-text="name"
+              label="Groups"
+              multiple
+              chips
+              dense
+              clearable
+              hide-details
+              class="custom-input"
+              @change="applyFilters"
+            />
+          </v-col> -->
+          <v-col cols="12" md="4" class="d-flex align-center">
+            <v-switch
+              v-model="filters.created_by_me"
+              label="Created by Me"
+              inset
+              hide-details
+              class="mt-2"
+              @change="applyFilters"
+            />
+          </v-col>
+        </v-row>
+      </v-sheet>
+
       <v-tabs
         center-active
         v-model="selectedTab"
@@ -74,6 +122,12 @@
             {{ item.due_datetime }}
           </v-chip>
         </template>
+
+        <!-- <template v-slot:item.group="{ item }">
+          <v-chip color="success" small class="ma-1" dark>
+            {{ item.group ? item.group.name : "No Group" }}
+          </v-chip>
+        </template> -->
 
         <template v-slot:item.actions="{ item }">
           <v-btn
@@ -143,12 +197,24 @@ export default {
         { text: "Created_at", value: "created_at", sortable: true },
         { text: "Actions", value: "actions", sortable: false, align: "end" },
       ],
+      filters: {
+        assignees: [],
+        groups: [],
+        created_by_me: false,
+      },
+      allAssignees: [],
+      allGroups: [],
     };
   },
   mounted() {
     this.fetchStatuses();
   },
   methods: {
+    applyFilters() {
+      const statusId = this.statuses[this.selectedTab].id;
+      this.fetchTasks(statusId);
+    },
+
     fetchStatuses() {
       this.loading = true;
       axios
@@ -156,6 +222,8 @@ export default {
         .then((res) => {
           this.statuses = res.data.statuses;
           this.priorities = res.data.priorities || [];
+          this.allAssignees = res.data.users || [];
+          this.allGroups = res.data.groups || [];
           if (this.statuses.length) {
             this.fetchTasks(
               this.selectedTab ? this.statuses[this.selectedTab].id : this.statuses[0].id
@@ -168,10 +236,25 @@ export default {
     },
     fetchTasks(statusId) {
       this.loading = true;
+      const params = new URLSearchParams();
+      params.append("status_id", statusId);
+      if (this.filters.created_by_me) {
+        params.append("created_by_me", 1);
+      }
+      if (this.filters.assignees.length) {
+        this.filters.assignees.forEach((id) => params.append("assignees[]", id));
+      }
+      if (this.filters.groups.length) {
+        this.filters.groups.forEach((id) => params.append("groups[]", id));
+      }
       axios
-        .get(`get-tasks?status_id=${statusId}`)
+        .get(`get-tasks?${params.toString()}`)
         .then((res) => {
           this.tasks = res.data.tasks;
+        })
+        .catch((error) => {
+          console.error("Error fetching tasks:", error.response);
+          alert("Failed to fetch tasks.");
         })
         .finally(() => {
           this.loading = false;

@@ -383,6 +383,14 @@ class TaskController extends Controller
 
     public function getTasks(Request $request)
     {
+        $request->validate([
+            'status_id'=>'nullable|exists:task_statuses,id',
+            'assignees' => 'nullable|array',
+            'assignees.*' => 'exists:users,id',
+            'groups' => 'nullable|array',
+            'groups.*' => 'exists:groups,id',
+        ]);
+
         $statusId = $request->input('status_id', null);
 
         $query = Task::with(['createdBy', 'group'])
@@ -395,6 +403,16 @@ class TaskController extends Controller
 
         if ($statusId) {
             $query->where('task_status_id', $statusId);
+        }
+
+        if ($request->has('assignees') && is_array($request->assignees) && count($request->assignees) > 0) {
+            $query->whereHas('assignedUsers', function ($q) use ($request) {
+                $q->whereIn('user_id', $request->assignees);
+            });
+        }
+
+        if ($request->has('groups') && is_array($request->groups) && count($request->groups) > 0) {
+            $query->whereIn('group_id', $request->groups);
         }
 
         $tasks = $query->latest()->get();
@@ -421,6 +439,7 @@ class TaskController extends Controller
                 'can_edit' => $task->created_by === auth()->id(),
                 'can_view' => $task->created_by === auth()->id() || $task->assignedUsers->contains(auth()->id()),
                 'can_delete' => $task->created_by === auth()->id(),
+                'group' => $task->group ? $task->group->only(['id', 'name']) : null,
             ];
         });
 
@@ -451,17 +470,35 @@ class TaskController extends Controller
             ];
         });
 
-        $priorities = Priority::all()->map(function ($priority) {
+
+        $data = $this->dataForCreateEdit();
+        $assignableUsers = $data['assignableUsers'];
+        $priorities = $data['priorities'];
+
+        $priorities = $priorities->map(function ($priority) {
             return [
                 'id' => $priority->id,
                 'name' => $priority->name,
             ];
         });
 
+        $groups= Group::whereHas('groupMembers', function ($query) {
+                $query->where('user_id', auth()->id());
+            })
+            ->get()
+            ->map(function ($group) {
+                return [
+                    'id' => $group->id,
+                    'name' => $group->name,
+                ];
+            });
+
+
         return response()->json([
             'statuses' => $statuses,
-            'priorities' => $priorities
+            'priorities' => $priorities,
+            'users'=>$assignableUsers->flatten(),
+            'groups' => $groups,
         ]);
     }
-
 }
