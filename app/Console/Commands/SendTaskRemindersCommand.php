@@ -7,6 +7,7 @@ use App\Jobs\SendTaskReminderJob;
 use App\Models\Task;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class SendTaskRemindersCommand extends Command
 {
@@ -52,6 +53,15 @@ class SendTaskRemindersCommand extends Command
             ->get()
             ->each(function ($task) use ($now) {
                 $remindAt = Carbon::parse($task->due_datetime)->subMinutes($task->reminder_offset);
+
+                Log::info('SendTaskRemindersCommand', [
+                    'task_id' => $task->id,
+                    'remind_at' => $remindAt->format('Y-m-d H:i'),
+                    'now' => $now->format('Y-m-d H:i'),
+                    'due_datetime' => $task->due_datetime,
+                    'reminder_offset' => $task->reminder_offset,
+                    'match'=> $remindAt->format('Y-m-d H:i') === $now->format('Y-m-d H:i'),
+                ]);
 
                 if ($remindAt->format('Y-m-d H:i') === $now->format('Y-m-d H:i')) {
                     dispatch(new SendTaskReminderJob($task));
