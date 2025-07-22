@@ -389,6 +389,7 @@ class TaskController extends Controller
             'assignees.*' => 'exists:users,id',
             'groups' => 'nullable|array',
             'groups.*' => 'exists:groups,id',
+            'created_by_me' => 'nullable|boolean',
         ]);
 
         $statusId = $request->input('status_id', null);
@@ -413,6 +414,10 @@ class TaskController extends Controller
 
         if ($request->has('groups') && is_array($request->groups) && count($request->groups) > 0) {
             $query->whereIn('group_id', $request->groups);
+        }
+
+        if ($request->has('created_by_me') && $request->created_by_me) {
+            $query->where('created_by', auth()->id());
         }
 
         $tasks = $query->latest()->get();
