@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Task;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class RepeatTaskCommand extends Command
 {
@@ -38,6 +39,8 @@ class RepeatTaskCommand extends Command
      */
     public function handle()
     {
+
+        Log::info("RepeatTaskCommand");
 
         $now = now();
 

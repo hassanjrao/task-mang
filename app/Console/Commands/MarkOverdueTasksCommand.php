@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Task;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class MarkOverdueTasksCommand extends Command
 {
@@ -29,6 +30,9 @@ class MarkOverdueTasksCommand extends Command
         $overDueTaskStatusId=4;
         $completedTaskStatusId=3;
 
+        Log::info('MarkOverdueTasksCommand', [
+            'now' => $now->format('Y-m-d H:i'),
+        ]);
 
         $affected = Task::whereNotIn('task_status_id', [$completedTaskStatusId, $overDueTaskStatusId])
             ->where('due_datetime', '<', $now)
