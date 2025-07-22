@@ -48,6 +48,17 @@ class SendTaskRemindersCommand extends Command
         // // broadcast(new TaskReminderEvent($task));
         // dispatch(new SendTaskReminderJob($task));
 
+//         {
+//     "task_id": 2,
+//     "remind_at": "2025-07-22 09:54",
+//     "now": "2025-07-22 09:56",
+//     "due_datetime": "2025-07-22 09:54:00",
+//     "reminder_offset": 0,
+//     "match": false
+// }
+
+        Log::info('SendTaskRemindersCommand');
+
         Task::whereNotNull('due_datetime')
             ->whereNotNull('reminder_offset')
             ->get()
