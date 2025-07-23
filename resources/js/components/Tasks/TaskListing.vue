@@ -3,6 +3,8 @@
     <v-card-title>
       <!-- add button on the right -->
       <v-spacer></v-spacer>
+
+      <v-btn color="success" @click="downloadSampleExcel">Download Sample Excel </v-btn>
       <v-btn color="primary" @click="createTask">Add Task </v-btn>
     </v-card-title>
     <v-card-text>
@@ -26,22 +28,7 @@
             />
           </v-col>
           <!-- Group Filter -->
-          <!-- <v-col cols="12" md="4">
-            <v-autocomplete
-              v-model="filters.groups"
-              :items="allGroups"
-              item-value="id"
-              item-text="name"
-              label="Groups"
-              multiple
-              chips
-              dense
-              clearable
-              hide-details
-              class="custom-input"
-              @change="applyFilters"
-            />
-          </v-col> -->
+
           <v-col cols="12" md="4" class="d-flex align-center">
             <v-switch
               v-model="filters.created_by_me"
@@ -51,6 +38,32 @@
               class="mt-2"
               @change="applyFilters"
             />
+          </v-col>
+
+          <v-col cols="12" md="4">
+            <v-row dense class="d-flex align-center justify-end">
+              <v-col cols="8">
+                <v-file-input
+                  v-model="importFile"
+                  label="Import Tasks (Excel)"
+                  accept=".xls,.xlsx"
+                  dense
+                  hide-details
+                  @change="onFileSelected"
+                ></v-file-input>
+              </v-col>
+              <v-col cols="3" class="d-flex align-center">
+                <v-btn
+                  color="success"
+                  :disabled="!importFile"
+                  @click="uploadImportFile"
+                  block
+                  small
+                >
+                  Import
+                </v-btn>
+              </v-col>
+            </v-row>
           </v-col>
         </v-row>
       </v-sheet>
@@ -204,12 +217,42 @@ export default {
       },
       allAssignees: [],
       allGroups: [],
+      importFile: null,
     };
   },
   mounted() {
     this.fetchStatuses();
   },
   methods: {
+    downloadSampleExcel() {
+      window.open("/sample-excel/task-create-sample.xlsx", "_blank");
+    },
+    onFileSelected(file) {
+      this.importFile = file;
+    },
+    uploadImportFile() {
+      if (!this.importFile) return;
+
+      const formData = new FormData();
+      formData.append("file", this.importFile);
+
+      this.loading = true;
+      axios
+        .post("/tasks/import", formData)
+        .then(() => {
+          this.fetchStatuses(); // Refresh tasks
+          alert("Tasks imported successfully.");
+        })
+        .catch((error) => {
+          console.error(error);
+          alert("Failed to import tasks.");
+        })
+        .finally(() => {
+          this.loading = false;
+          this.importFile = null;
+        });
+    },
+
     applyFilters() {
       const statusId = this.statuses[this.selectedTab].id;
       this.fetchTasks(statusId);

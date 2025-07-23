@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TaskAttachmentsController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskExportController;
+use App\Http\Controllers\TaskImportController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -69,5 +70,6 @@ Route::middleware(["auth",'check.group.invites'])->group(function () {
 
     Route::get('/tasks/{task}/export', [TaskExportController::class, 'exportSingle'])->name('tasks.export.single');
 
+    Route::post('/tasks/import', [TaskImportController::class, 'import'])->name('tasks.import');
 
 });
